@@ -1,6 +1,6 @@
 module Page.SignIn exposing (Model, Msg, init, update, view)
 
-import Components
+import Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, plainText)
 import Element exposing (..)
 import Route
 
@@ -10,7 +10,13 @@ import Route
 
 
 type Model
-    = Model
+    = SigningIn Inputs { displayPassword : Bool }
+
+
+type alias Inputs =
+    { emailInput : String
+    , passwordInput : String
+    }
 
 
 
@@ -18,20 +24,74 @@ type Model
 
 
 type Msg
-    = Msg
+    = UpdateEmail String
+    | UpdatePassword String
+    | TogglePassword
+    | AttemptSignIn
 
 
 update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
 update on msg model =
-    case msg of
-        Msg ->
-            ( model
+    case ( msg, model ) of
+        ( UpdateEmail str, SigningIn inputs displayPassword ) ->
+            ( SigningIn { inputs | emailInput = str } displayPassword
             , Cmd.none
             )
+
+        ( UpdatePassword str, SigningIn inputs displayPassword ) ->
+            ( SigningIn { inputs | passwordInput = str } displayPassword
+            , Cmd.none
+            )
+
+        ( TogglePassword, SigningIn inputs { displayPassword } ) ->
+            ( SigningIn inputs { displayPassword = not displayPassword }
+            , Cmd.none
+            )
+
+        ( AttemptSignIn, SigningIn _ _ ) ->
+            ( model, Cmd.none )
 
 
 
 -- VIEW
+
+
+signingInView : (Msg -> msg) -> Inputs -> { displayPassword : Bool } -> Element msg
+signingInView on inputs { displayPassword } =
+    column []
+        [ plainText
+            { labelString = "Email address"
+            , placeholder = Nothing
+            , text = inputs.emailInput
+            , onChange = on << UpdateEmail
+            }
+        , row []
+            [ (if displayPassword then
+                currentPasswordDisplayed
+
+               else
+                currentPasswordHidden
+              )
+                { labelString = "Password"
+                , placeholder = Nothing
+                , text = inputs.passwordInput
+                , onChange = on << UpdatePassword
+                }
+            , actionButton
+                { labelString =
+                    if displayPassword then
+                        "Hide"
+
+                    else
+                        "Show"
+                , onPress = on <| TogglePassword
+                }
+            ]
+        , actionButton
+            { labelString = "Sign in"
+            , onPress = on AttemptSignIn
+            }
+        ]
 
 
 view : (Msg -> msg) -> Model -> Element msg
@@ -42,9 +102,20 @@ view on model =
             { url = Route.toUrlString Route.Home
             , label = text "Go to home"
             }
+        , link []
+            { url = Route.toUrlString Route.CreateAccount
+            , label = text "Go to create account"
+            }
+        , case model of
+            SigningIn inputs displayPassword ->
+                signingInView on inputs displayPassword
         ]
 
 
 init : Model
 init =
-    Model
+    SigningIn
+        { emailInput = ""
+        , passwordInput = ""
+        }
+        { displayPassword = False }

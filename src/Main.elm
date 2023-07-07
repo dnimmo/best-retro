@@ -4,6 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Components
 import Page.CreateAccount as CreateAccount
+import Page.Dashboard as Dashboard
 import Page.Home as Home
 import Page.Loading as Loading
 import Page.SignIn as SignIn
@@ -26,6 +27,7 @@ type State
     | ViewingHome
     | ViewingCreateAccount CreateAccount.Model
     | ViewingSignIn SignIn.Model
+    | ViewingDashboard Dashboard.Model
 
 
 
@@ -37,6 +39,7 @@ type Msg
     | UrlChanged Url
     | CreateAccountMsg CreateAccount.Msg
     | SignInMsg SignIn.Msg
+    | DashboardMsg Dashboard.Msg
 
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
@@ -124,6 +127,9 @@ view model =
 
                 ViewingSignIn signInModel ->
                     SignIn.view SignInMsg signInModel
+
+                ViewingDashboard dashboardModel ->
+                    Dashboard.view DashboardMsg dashboardModel
         ]
     }
 
