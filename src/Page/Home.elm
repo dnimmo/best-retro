@@ -13,12 +13,6 @@ view : Element msg
 view =
     column []
         [ Components.heading1 "Home"
-        , link []
-            { url = Route.toUrlString Route.CreateAccount
-            , label = text "Go to create account"
-            }
-        , link []
-            { url = Route.toUrlString Route.SignIn
-            , label = text "Go to sign in"
-            }
+        , Components.internalLink Route.CreateAccount "Go to create account"
+        , Components.internalLink Route.SignIn "Go to sign in"
         ]

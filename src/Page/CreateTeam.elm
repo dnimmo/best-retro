@@ -1,4 +1,4 @@
-module Page.CreateAccount exposing (Model, Msg, init, update, view)
+module Page.CreateTeam exposing (Model, Msg, init, update, view)
 
 import Components
 import Element exposing (..)
@@ -37,8 +37,8 @@ update on msg model =
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
-        [ Components.heading1 "Create Account"
-        , Components.internalLink Route.Home "Go to home"
+        [ Components.heading1 "Create new team"
+        , Components.internalLink Route.Dashboard "Back to dashboard"
         ]
 
 

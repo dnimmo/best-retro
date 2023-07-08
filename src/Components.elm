@@ -1,9 +1,10 @@
-module Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, globalLayout, heading1, plainText)
+module Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, globalLayout, heading1, internalLink, plainText)
 
 import Browser.Events exposing (Visibility(..))
 import Element exposing (..)
 import Element.Input as Input
 import Html exposing (Html)
+import Route exposing (Route)
 
 
 globalLayout : Element msg -> Html msg
@@ -113,5 +114,13 @@ actionButton : { onPress : msg, labelString : String } -> Element msg
 actionButton { onPress, labelString } =
     Input.button []
         { onPress = Just onPress
+        , label = text labelString
+        }
+
+
+internalLink : Route -> String -> Element msg
+internalLink route labelString =
+    Element.link []
+        { url = Route.toUrlString route
         , label = text labelString
         }

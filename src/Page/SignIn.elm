@@ -1,6 +1,6 @@
 module Page.SignIn exposing (Model, Msg, init, update, view)
 
-import Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, plainText)
+import Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, internalLink, plainText)
 import Element exposing (..)
 import Route
 
@@ -87,10 +87,14 @@ signingInView on inputs { displayPassword } =
                 , onPress = on <| TogglePassword
                 }
             ]
-        , actionButton
-            { labelString = "Sign in"
-            , onPress = on AttemptSignIn
-            }
+
+        -- , actionButton
+        --     { labelString = "Sign in"
+        --     , onPress = on AttemptSignIn
+        --     }
+        , internalLink
+            Route.Dashboard
+            "Sign in (Nimmo you need to replace this with a button)"
         ]
 
 
@@ -98,14 +102,8 @@ view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
         [ Components.heading1 "Sign in"
-        , link []
-            { url = Route.toUrlString Route.Home
-            , label = text "Go to home"
-            }
-        , link []
-            { url = Route.toUrlString Route.CreateAccount
-            , label = text "Go to create account"
-            }
+        , internalLink Route.Home "Go to home"
+        , internalLink Route.CreateAccount "Go to create account"
         , case model of
             SigningIn inputs displayPassword ->
                 signingInView on inputs displayPassword

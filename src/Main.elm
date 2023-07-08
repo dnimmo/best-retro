@@ -4,9 +4,11 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Components
 import Page.CreateAccount as CreateAccount
+import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
 import Page.Home as Home
 import Page.Loading as Loading
+import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
 import Route
 import Url exposing (Url)
@@ -28,6 +30,8 @@ type State
     | ViewingCreateAccount CreateAccount.Model
     | ViewingSignIn SignIn.Model
     | ViewingDashboard Dashboard.Model
+    | ViewingMyTeams MyTeams.Model
+    | ViewingCreateTeam CreateTeam.Model
 
 
 
@@ -40,6 +44,8 @@ type Msg
     | CreateAccountMsg CreateAccount.Msg
     | SignInMsg SignIn.Msg
     | DashboardMsg Dashboard.Msg
+    | MyTeamsMsg MyTeams.Msg
+    | CreateTeamMsg CreateTeam.Msg
 
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
@@ -55,6 +61,15 @@ urlChange url model =
 
                 Just Route.SignIn ->
                     ViewingSignIn SignIn.init
+
+                Just Route.Dashboard ->
+                    ViewingDashboard Dashboard.init
+
+                Just Route.MyTeams ->
+                    ViewingMyTeams MyTeams.init
+
+                Just Route.CreateTeam ->
+                    ViewingCreateTeam CreateTeam.init
 
                 Nothing ->
                     Debug.todo "Error state here"
@@ -102,6 +117,39 @@ update msg model =
             , cmd
             )
 
+        ( DashboardMsg dashboardMsg, ViewingDashboard dashboardModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    Dashboard.update DashboardMsg dashboardMsg dashboardModel
+            in
+            ( { model
+                | state = ViewingDashboard updatedModel
+              }
+            , cmd
+            )
+
+        ( MyTeamsMsg myTeamsMsg, ViewingMyTeams myTeamsModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    MyTeams.update MyTeamsMsg myTeamsMsg myTeamsModel
+            in
+            ( { model
+                | state = ViewingMyTeams updatedModel
+              }
+            , cmd
+            )
+
+        ( CreateTeamMsg createTeamMsg, ViewingCreateTeam createTeamModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    CreateTeam.update CreateTeamMsg createTeamMsg createTeamModel
+            in
+            ( { model
+                | state = ViewingCreateTeam updatedModel
+              }
+            , cmd
+            )
+
         _ ->
             ( model, Cmd.none )
 
@@ -130,6 +178,12 @@ view model =
 
                 ViewingDashboard dashboardModel ->
                     Dashboard.view DashboardMsg dashboardModel
+
+                ViewingMyTeams myTeamsModel ->
+                    MyTeams.view MyTeamsMsg myTeamsModel
+
+                ViewingCreateTeam createTeamModel ->
+                    CreateTeam.view CreateTeamMsg createTeamModel
         ]
     }
 

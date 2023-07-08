@@ -8,12 +8,18 @@ type Route
     = Home
     | CreateAccount
     | SignIn
+    | Dashboard
+    | MyTeams
+    | CreateTeam
 
 
 slugs =
     { landingPage = "home"
     , createAccount = "create-account"
     , signIn = "sign-in"
+    , dashboard = "dashboard"
+    , myTeams = "my-teams"
+    , createTeam = "create-team"
     }
 
 
@@ -29,6 +35,15 @@ toUrlString route =
 
                 SignIn ->
                     slugs.signIn
+
+                Dashboard ->
+                    slugs.dashboard
+
+                MyTeams ->
+                    slugs.myTeams
+
+                CreateTeam ->
+                    slugs.createTeam
            )
 
 
@@ -39,6 +54,9 @@ parser =
         , Parser.map Home (s slugs.landingPage)
         , Parser.map CreateAccount (s slugs.createAccount)
         , Parser.map SignIn (s slugs.signIn)
+        , Parser.map Dashboard (s slugs.dashboard)
+        , Parser.map MyTeams (s slugs.myTeams)
+        , Parser.map CreateTeam (s slugs.createTeam)
         ]
 
 
