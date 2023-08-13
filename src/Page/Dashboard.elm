@@ -38,8 +38,8 @@ view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
         [ Components.heading1 "Dashboard"
-        , Components.internalLink Route.MyTeams "My Teams"
-        , Components.internalLink Route.CreateTeam "Create New Team"
+        , Components.internalLink Route.MyTeams <| text "My Teams"
+        , Components.internalLink Route.CreateTeam <| text "Create New Team"
         ]
 
 

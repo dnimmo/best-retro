@@ -94,7 +94,8 @@ signingInView on inputs { displayPassword } =
         --     }
         , internalLink
             Route.Dashboard
-            "Sign in (Nimmo you need to replace this with a button)"
+          <|
+            text "Sign in (Nimmo you need to replace this with a button)"
         ]
 
 
@@ -102,8 +103,8 @@ view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
         [ Components.heading1 "Sign in"
-        , internalLink Route.Home "Go to home"
-        , internalLink Route.CreateAccount "Go to create account"
+        , internalLink Route.Home <| text "Go to home"
+        , internalLink Route.CreateAccount <| text "Go to create account"
         , case model of
             SigningIn inputs displayPassword ->
                 signingInView on inputs displayPassword

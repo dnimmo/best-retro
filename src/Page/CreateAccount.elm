@@ -38,7 +38,7 @@ view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
         [ Components.heading1 "Create Account"
-        , Components.internalLink Route.Home "Go to home"
+        , Components.internalLink Route.Home <| text "Go to home"
         ]
 
 

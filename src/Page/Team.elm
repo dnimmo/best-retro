@@ -1,4 +1,4 @@
-module Page.CreateTeam exposing (Model, Msg, init, update, view)
+module Page.Team exposing (Model, Msg, init, update, view)
 
 import Components
 import Element exposing (..)
@@ -10,7 +10,7 @@ import Route
 
 
 type Model
-    = Model
+    = ViewingTeam { teamId : String }
 
 
 
@@ -37,11 +37,11 @@ update on msg model =
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
-        [ Components.heading1 "Create new team"
+        [ Components.heading1 "My Team"
         , Components.internalLink Route.Dashboard <| text "Back to dashboard"
         ]
 
 
-init : Model
-init =
-    Model
+init : String -> Model
+init teamId =
+    ViewingTeam { teamId = teamId }

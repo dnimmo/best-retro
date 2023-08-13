@@ -10,7 +10,9 @@ import Page.Home as Home
 import Page.Loading as Loading
 import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
+import Page.Team
 import Route
+import Team
 import Url exposing (Url)
 
 
@@ -32,6 +34,7 @@ type State
     | ViewingDashboard Dashboard.Model
     | ViewingMyTeams MyTeams.Model
     | ViewingCreateTeam CreateTeam.Model
+    | ViewingTeam Page.Team.Model
 
 
 
@@ -46,6 +49,7 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
+    | TeamMsg Page.Team.Msg
 
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
@@ -66,10 +70,16 @@ urlChange url model =
                     ViewingDashboard Dashboard.init
 
                 Just Route.MyTeams ->
-                    ViewingMyTeams MyTeams.init
+                    ViewingMyTeams <|
+                        MyTeams.init <|
+                            Just Team.fakeTeams
 
                 Just Route.CreateTeam ->
                     ViewingCreateTeam CreateTeam.init
+
+                Just (Route.Team teamId) ->
+                    ViewingTeam <|
+                        Page.Team.init teamId
 
                 Nothing ->
                     Debug.todo "Error state here"
@@ -184,6 +194,9 @@ view model =
 
                 ViewingCreateTeam createTeamModel ->
                     CreateTeam.view CreateTeamMsg createTeamModel
+
+                ViewingTeam teamModel ->
+                    Page.Team.view TeamMsg teamModel
         ]
     }
 

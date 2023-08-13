@@ -1,7 +1,8 @@
-module Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, globalLayout, heading1, internalLink, plainText)
+module Components exposing (actionButton, card, currentPasswordDisplayed, currentPasswordHidden, globalLayout, heading1, heading2, internalLink, internalLinkCard, paragraph, plainText)
 
 import Browser.Events exposing (Visibility(..))
 import Element exposing (..)
+import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Route exposing (Route)
@@ -17,6 +18,11 @@ globalLayout =
 
 heading1 : String -> Element msg
 heading1 str =
+    text str
+
+
+heading2 : String -> Element msg
+heading2 str =
     text str
 
 
@@ -118,9 +124,33 @@ actionButton { onPress, labelString } =
         }
 
 
-internalLink : Route -> String -> Element msg
-internalLink route labelString =
-    Element.link []
+internalLink : Route -> Element msg -> Element msg
+internalLink route label =
+    Element.link
+        [ width fill
+        , height fill
+        , Font.underline
+        ]
         { url = Route.toUrlString route
-        , label = text labelString
+        , label = label
         }
+
+
+paragraph : List String -> Element msg
+paragraph text =
+    Element.paragraph [] <|
+        List.map Element.text text
+
+
+card : List (Element msg) -> Element msg
+card content =
+    column
+        [ width fill
+        , height fill
+        ]
+        content
+
+
+internalLinkCard : Route -> List (Element msg) -> Element msg
+internalLinkCard route =
+    internalLink route << card

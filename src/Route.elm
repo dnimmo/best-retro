@@ -10,6 +10,7 @@ type Route
     | SignIn
     | Dashboard
     | MyTeams
+    | Team String
     | CreateTeam
 
 
@@ -20,6 +21,7 @@ slugs =
     , dashboard = "dashboard"
     , myTeams = "my-teams"
     , createTeam = "create-team"
+    , viewingTeam = "team"
     }
 
 
@@ -44,6 +46,9 @@ toUrlString route =
 
                 CreateTeam ->
                     slugs.createTeam
+
+                Team teamId ->
+                    slugs.viewingTeam ++ "/" ++ teamId
            )
 
 
@@ -57,6 +62,7 @@ parser =
         , Parser.map Dashboard (s slugs.dashboard)
         , Parser.map MyTeams (s slugs.myTeams)
         , Parser.map CreateTeam (s slugs.createTeam)
+        , Parser.map Team (s slugs.viewingTeam </> Parser.string)
         ]
 
 
