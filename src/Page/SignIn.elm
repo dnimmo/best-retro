@@ -1,6 +1,7 @@
 module Page.SignIn exposing (Model, Msg, init, update, view)
 
-import Components exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, internalLink, plainText)
+import Components exposing (internalLink)
+import Components.Input exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, plainText)
 import Element exposing (..)
 import Route
 

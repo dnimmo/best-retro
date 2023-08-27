@@ -5,17 +5,24 @@ module Team exposing
     , getMemberIds
     , getName
     , toRoute
+    , userIsAdmin
     )
 
 import Route exposing (Route(..))
 
 
+type alias ID =
+    String
+
+
 type Team
     = Team
         { name : String
-        , members : List String
+        , members : List ID
         , description : String
-        , id : String
+        , id : ID
+        , admins : List ID
+        , creator : ID
         }
 
 
@@ -44,6 +51,11 @@ toRoute team =
     Route.Team (getId team)
 
 
+userIsAdmin : Team -> String -> Bool
+userIsAdmin (Team { admins }) userId =
+    List.member userId admins
+
+
 
 -- EVEYTHING BELOW IS JUST FOR TESTING
 
@@ -55,11 +67,15 @@ fakeTeams =
         , members = [ "1", "2", "3" ]
         , description = "The first test team"
         , id = "1"
+        , creator = "1"
+        , admins = [ "1" ]
         }
     , Team
         { name = "Team 2"
         , members = [ "1", "2", "3" ]
         , description = "The second test team"
         , id = "2"
+        , creator = "1"
+        , admins = [ "1" ]
         }
     ]
