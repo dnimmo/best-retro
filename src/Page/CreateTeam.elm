@@ -14,6 +14,7 @@ import Route
 type Model
     = ViewingCreateTeamFields { teamName : String }
     | Loading
+    | TeamCreated
     | Error String
 
 
@@ -25,6 +26,9 @@ modelToString model =
 
         Loading ->
             "Loading"
+
+        TeamCreated ->
+            "TeamCreated"
 
         Error errorMessage ->
             "Error " ++ errorMessage
@@ -53,7 +57,15 @@ update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
 update on msg model =
     case ( msg, model ) of
         ( UpdateTeamName str, ViewingCreateTeamFields fields ) ->
-            ( ViewingCreateTeamFields { fields | teamName = str }
+            ( ViewingCreateTeamFields
+                { fields
+                    | teamName = str
+                }
+            , Cmd.none
+            )
+
+        ( SubmitNewTeam, ViewingCreateTeamFields _ ) ->
+            ( TeamCreated
             , Cmd.none
             )
 
@@ -92,6 +104,9 @@ view on model =
 
             Loading ->
                 text "Loading..."
+
+            TeamCreated ->
+                text "Team created!"
 
             Error errorMessage ->
                 text errorMessage

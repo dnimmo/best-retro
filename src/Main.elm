@@ -14,6 +14,7 @@ import Page.Team
 import Route
 import Team
 import Url exposing (Url)
+import User exposing (User, getUser)
 
 
 
@@ -31,10 +32,10 @@ type State
     | ViewingHome
     | ViewingCreateAccount CreateAccount.Model
     | ViewingSignIn SignIn.Model
-    | ViewingDashboard Dashboard.Model
-    | ViewingMyTeams MyTeams.Model
-    | ViewingCreateTeam CreateTeam.Model
-    | ViewingTeam Page.Team.Model
+    | ViewingDashboard User Dashboard.Model
+    | ViewingMyTeams User MyTeams.Model
+    | ViewingCreateTeam User CreateTeam.Model
+    | ViewingTeam User Page.Team.Model
 
 
 
@@ -67,18 +68,18 @@ urlChange url model =
                     ViewingSignIn SignIn.init
 
                 Just Route.Dashboard ->
-                    ViewingDashboard Dashboard.init
+                    ViewingDashboard getUser Dashboard.init
 
                 Just Route.MyTeams ->
-                    ViewingMyTeams <|
+                    ViewingMyTeams getUser <|
                         MyTeams.init <|
                             Just Team.fakeTeams
 
                 Just Route.CreateTeam ->
-                    ViewingCreateTeam CreateTeam.init
+                    ViewingCreateTeam getUser CreateTeam.init
 
                 Just (Route.Team teamId) ->
-                    ViewingTeam <|
+                    ViewingTeam getUser <|
                         Page.Team.init teamId
 
                 Nothing ->
@@ -127,35 +128,35 @@ update msg model =
             , cmd
             )
 
-        ( DashboardMsg dashboardMsg, ViewingDashboard dashboardModel ) ->
+        ( DashboardMsg dashboardMsg, ViewingDashboard user dashboardModel ) ->
             let
                 ( updatedModel, cmd ) =
                     Dashboard.update DashboardMsg dashboardMsg dashboardModel
             in
             ( { model
-                | state = ViewingDashboard updatedModel
+                | state = ViewingDashboard user updatedModel
               }
             , cmd
             )
 
-        ( MyTeamsMsg myTeamsMsg, ViewingMyTeams myTeamsModel ) ->
+        ( MyTeamsMsg myTeamsMsg, ViewingMyTeams user myTeamsModel ) ->
             let
                 ( updatedModel, cmd ) =
                     MyTeams.update MyTeamsMsg myTeamsMsg myTeamsModel
             in
             ( { model
-                | state = ViewingMyTeams updatedModel
+                | state = ViewingMyTeams user updatedModel
               }
             , cmd
             )
 
-        ( CreateTeamMsg createTeamMsg, ViewingCreateTeam createTeamModel ) ->
+        ( CreateTeamMsg createTeamMsg, ViewingCreateTeam user createTeamModel ) ->
             let
                 ( updatedModel, cmd ) =
                     CreateTeam.update CreateTeamMsg createTeamMsg createTeamModel
             in
             ( { model
-                | state = ViewingCreateTeam updatedModel
+                | state = ViewingCreateTeam user updatedModel
               }
             , cmd
             )
@@ -186,16 +187,16 @@ view model =
                 ViewingSignIn signInModel ->
                     SignIn.view SignInMsg signInModel
 
-                ViewingDashboard dashboardModel ->
+                ViewingDashboard _ dashboardModel ->
                     Dashboard.view DashboardMsg dashboardModel
 
-                ViewingMyTeams myTeamsModel ->
+                ViewingMyTeams _ myTeamsModel ->
                     MyTeams.view MyTeamsMsg myTeamsModel
 
-                ViewingCreateTeam createTeamModel ->
+                ViewingCreateTeam _ createTeamModel ->
                     CreateTeam.view CreateTeamMsg createTeamModel
 
-                ViewingTeam teamModel ->
+                ViewingTeam _ teamModel ->
                     Page.Team.view TeamMsg teamModel
         ]
     }
