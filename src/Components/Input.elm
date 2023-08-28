@@ -2,11 +2,31 @@ module Components.Input exposing
     ( actionButton
     , currentPasswordDisplayed
     , currentPasswordHidden
+    , form
     , plainText
     )
 
 import Element exposing (..)
 import Element.Input as Input
+import Html.Events
+import Json.Decode as Decode
+
+
+onEnter : msg -> Element.Attribute msg
+onEnter msg =
+    Element.htmlAttribute
+        (Html.Events.on "keyup"
+            (Decode.field "key" Decode.string
+                |> Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Decode.succeed msg
+
+                        else
+                            Decode.fail "Not the enter key - no action taken"
+                    )
+            )
+        )
 
 
 type TextInput
@@ -105,3 +125,12 @@ actionButton { onPress, labelString } =
         { onPress = Just onPress
         , label = text labelString
         }
+
+
+form : msg -> Element msg -> Element msg
+form onEnterMsg childElement =
+    el
+        [ onEnter onEnterMsg
+        , width fill
+        ]
+        childElement

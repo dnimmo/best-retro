@@ -12,7 +12,7 @@ import Route
 view : Element msg
 view =
     column []
-        [ Components.heading1 "Home"
-        , Components.internalLink Route.CreateAccount <| text "Go to create account"
-        , Components.internalLink Route.SignIn <| text "Go to sign in"
+        [ Components.heading "Home"
+        , Components.link Route.CreateAccount [] "Go to create account"
+        , Components.link Route.SignIn [] "Go to sign in"
         ]

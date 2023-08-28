@@ -1,9 +1,10 @@
 module Team exposing
     ( Team
-    , fakeTeams
+    , createTeam
     , getDescription
     , getMemberIds
     , getName
+    , getTeam
     , toRoute
     , userIsAdmin
     )
@@ -51,17 +52,39 @@ toRoute team =
     Route.Team (getId team)
 
 
-userIsAdmin : Team -> String -> Bool
+userIsAdmin : Team -> ID -> Bool
 userIsAdmin (Team { admins }) userId =
     List.member userId admins
 
 
+getTeam : ID -> Maybe Team
+getTeam id =
+    List.head <|
+        List.filter
+            (\team ->
+                getId team == id
+            )
+            teams
 
--- EVEYTHING BELOW IS JUST FOR TESTING
+
+createTeam : String -> ID -> Team
+createTeam name userId =
+    Team
+        { name = name
+        , members = [ userId ]
+        , description = ""
+        , id = "3"
+        , creator = userId
+        , admins = [ userId ]
+        }
 
 
-fakeTeams : List Team
-fakeTeams =
+
+-- Everything below here is just for testing
+
+
+teams : List Team
+teams =
     [ Team
         { name = "Team 1"
         , members = [ "1", "2", "3" ]

@@ -1,8 +1,9 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
-import Components
+import Components.Layout as Layout exposing (Layout)
+import Element exposing (layout)
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
@@ -12,7 +13,6 @@ import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
 import Page.Team
 import Route
-import Team
 import Url exposing (Url)
 import User exposing (User, getUser)
 
@@ -24,6 +24,7 @@ import User exposing (User, getUser)
 type alias Model =
     { navKey : Nav.Key
     , state : State
+    , layout : Layout
     }
 
 
@@ -72,8 +73,7 @@ urlChange url model =
 
                 Just Route.MyTeams ->
                     ViewingMyTeams getUser <|
-                        MyTeams.init <|
-                            Just Team.fakeTeams
+                        MyTeams.init getUser
 
                 Just Route.CreateTeam ->
                     ViewingCreateTeam getUser CreateTeam.init
@@ -109,7 +109,7 @@ update msg model =
         ( CreateAccountMsg createAccountMsg, ViewingCreateAccount createAccountModel ) ->
             let
                 ( updatedModel, cmd ) =
-                    CreateAccount.update CreateAccountMsg createAccountMsg createAccountModel
+                    CreateAccount.update CreateAccountMsg createAccountMsg createAccountModel model.navKey
             in
             ( { model
                 | state = ViewingCreateAccount updatedModel
@@ -173,7 +173,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "BestRetro"
     , body =
-        [ Components.globalLayout <|
+        [ layout [] <|
             case model.state of
                 ViewingLoading ->
                     Loading.view
@@ -182,7 +182,7 @@ view model =
                     Home.view
 
                 ViewingCreateAccount createAccountModel ->
-                    CreateAccount.view CreateAccountMsg createAccountModel
+                    CreateAccount.view CreateAccountMsg model.layout createAccountModel
 
                 ViewingSignIn signInModel ->
                     SignIn.view SignInMsg signInModel
@@ -225,6 +225,7 @@ init _ url navKey =
         url
         { navKey = navKey
         , state = ViewingLoading
+        , layout = Layout.getLayout 1001
         }
 
 

@@ -1,9 +1,10 @@
 module Page.MyTeams exposing (Model, Msg, init, update, view)
 
-import Components
+import Components as C
 import Element exposing (..)
 import Route
 import Team exposing (Team)
+import User exposing (User)
 
 
 
@@ -12,7 +13,7 @@ import Team exposing (Team)
 
 type Model
     = NotAMemberOfAnyTeam
-    | ViewingTeamList ( Team, List Team )
+    | ViewingTeamList (List Team)
 
 
 
@@ -34,48 +35,48 @@ update on msg model =
 
 
 -- VIEW
-
-
-teamCard : Team -> Element msg
-teamCard team =
-    Components.internalLinkCard (Team.toRoute team)
-        [ Components.heading2 <| Team.getName team
-        , Components.paragraph [ Team.getDescription team ]
-        ]
+-- teamCard : Team -> Element msg
+-- teamCard team =
+--     C.card (Team.toRoute team)
+--         [ C.heading <| Team.getName team
+--         , C.paragraph [ Team.getDescription team ]
+--         ]
 
 
 teamView : List Team -> Element msg
 teamView teams =
-    column [ width fill ] <|
-        Components.paragraph [ "You are a member of the following teams:" ]
-            :: List.map teamCard
-                teams
+    text "TODO"
+
+
+
+-- column [ width fill ] <|
+--     C.paragraph [ "You are a member of the following teams:" ]
+--         :: List.map teamCard
+--             teams
 
 
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
-        [ Components.heading1 "My Teams"
+        [ C.heading "My Teams"
         , case model of
             NotAMemberOfAnyTeam ->
-                Components.paragraph [ "You are not a member of any team." ]
+                text "You are not a member of any team."
 
-            ViewingTeamList ( team, otherTeams ) ->
-                teamView <| team :: otherTeams
-        , Components.internalLink Route.Dashboard <| text "Back to dashboard"
+            ViewingTeamList teams ->
+                teamView teams
+        , C.link Route.Dashboard [] "Back to dashboard"
         ]
 
 
-init : Maybe (List Team) -> Model
-init maybeTeams =
-    case maybeTeams of
-        Nothing ->
-            NotAMemberOfAnyTeam
+init : User -> Model
+init user =
+    let
+        teams =
+            User.getTeams user
+    in
+    if List.isEmpty teams then
+        NotAMemberOfAnyTeam
 
-        Just teams ->
-            case teams of
-                [] ->
-                    NotAMemberOfAnyTeam
-
-                team :: otherTeams ->
-                    ViewingTeamList ( team, otherTeams )
+    else
+        ViewingTeamList teams

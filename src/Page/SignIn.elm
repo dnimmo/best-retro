@@ -1,6 +1,6 @@
 module Page.SignIn exposing (Model, Msg, init, update, view)
 
-import Components exposing (internalLink)
+import Components as C
 import Components.Input exposing (actionButton, currentPasswordDisplayed, currentPasswordHidden, plainText)
 import Element exposing (..)
 import Route
@@ -93,19 +93,19 @@ signingInView on inputs { displayPassword } =
         --     { labelString = "Sign in"
         --     , onPress = on AttemptSignIn
         --     }
-        , internalLink
+        , C.link
             Route.Dashboard
-          <|
-            text "Sign in (Nimmo you need to replace this with a button)"
+            []
+            "Sign in (Nimmo you need to replace this with a button)"
         ]
 
 
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
-        [ Components.heading1 "Sign in"
-        , internalLink Route.Home <| text "Go to home"
-        , internalLink Route.CreateAccount <| text "Go to create account"
+        [ C.heading "Sign in"
+        , C.link Route.Home [] "Go to home"
+        , C.link Route.CreateAccount [] "Go to create account"
         , case model of
             SigningIn inputs displayPassword ->
                 signingInView on inputs displayPassword

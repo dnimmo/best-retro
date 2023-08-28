@@ -37,9 +37,9 @@ update on msg model =
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
     column []
-        [ Components.heading1 "Dashboard"
-        , Components.internalLink Route.MyTeams <| text "My Teams"
-        , Components.internalLink Route.CreateTeam <| text "Create New Team"
+        [ Components.heading "Dashboard"
+        , Components.link Route.MyTeams [] "My Teams"
+        , Components.link Route.CreateTeam [] "Create New Team"
         ]
 
 

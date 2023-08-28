@@ -1,5 +1,6 @@
-module Route exposing (Route(..), fromUrl, toUrlString)
+module Route exposing (Route(..), fromUrl, pushUrl, toUrlString)
 
+import Browser.Navigation as Nav
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 
@@ -69,3 +70,8 @@ parser =
 fromUrl : Url -> Maybe Route
 fromUrl =
     Parser.parse parser
+
+
+pushUrl : Nav.Key -> Route -> Cmd msg
+pushUrl key route =
+    Nav.pushUrl key (toUrlString route)
