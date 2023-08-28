@@ -12,18 +12,15 @@ module User exposing
 
 import Json.Encode as Encode
 import Team exposing (Team)
-
-
-type alias ID =
-    String
+import UniqueID exposing (UniqueID)
 
 
 type User
     = User
-        { id : ID
+        { id : UniqueID
         , name : String
         , email : String
-        , teams : List ID
+        , teams : List UniqueID
         }
 
 
@@ -32,7 +29,7 @@ getName (User { name }) =
     name
 
 
-getId : User -> ID
+getId : User -> UniqueID
 getId (User { id }) =
     id
 
@@ -41,10 +38,10 @@ getUser : User
 getUser =
     -- Eventually this will actually fetch a user properly
     User
-        { id = "123"
+        { id = UniqueID.generateDefaultID
         , name = "John Doe"
         , email = "dnimmo@gmail.com"
-        , teams = [ "1", "2" ]
+        , teams = [ UniqueID.generateDefaultID ]
         }
 
 
@@ -75,8 +72,8 @@ storeUser user =
 encode : User -> Encode.Value
 encode (User user) =
     Encode.object
-        [ ( "id", Encode.string user.id )
+        [ ( "id", UniqueID.encode user.id )
         , ( "name", Encode.string user.name )
         , ( "email", Encode.string user.email )
-        , ( "teams", Encode.list Encode.string user.teams )
+        , ( "teams", Encode.list UniqueID.encode user.teams )
         ]

@@ -10,20 +10,17 @@ module Team exposing
     )
 
 import Route exposing (Route(..))
-
-
-type alias ID =
-    String
+import UniqueID exposing (UniqueID)
 
 
 type Team
     = Team
         { name : String
-        , members : List ID
+        , members : List UniqueID
         , description : String
-        , id : ID
-        , admins : List ID
-        , creator : ID
+        , id : UniqueID
+        , admins : List UniqueID
+        , creator : UniqueID
         }
 
 
@@ -32,7 +29,7 @@ getName (Team team) =
     team.name
 
 
-getMemberIds : Team -> List String
+getMemberIds : Team -> List UniqueID
 getMemberIds (Team team) =
     team.members
 
@@ -42,22 +39,22 @@ getDescription (Team team) =
     team.description
 
 
-getId : Team -> String
+getId : Team -> UniqueID
 getId (Team team) =
     team.id
 
 
 toRoute : Team -> Route
 toRoute team =
-    Route.Team (getId team)
+    Route.Team (UniqueID.toString <| getId team)
 
 
-userIsAdmin : Team -> ID -> Bool
+userIsAdmin : Team -> UniqueID -> Bool
 userIsAdmin (Team { admins }) userId =
     List.member userId admins
 
 
-getTeam : ID -> Maybe Team
+getTeam : UniqueID -> Maybe Team
 getTeam id =
     List.head <|
         List.filter
@@ -67,13 +64,13 @@ getTeam id =
             teams
 
 
-createTeam : String -> ID -> Team
+createTeam : String -> UniqueID -> Team
 createTeam name userId =
     Team
         { name = name
         , members = [ userId ]
         , description = ""
-        , id = "3"
+        , id = UniqueID.generateDefaultID
         , creator = userId
         , admins = [ userId ]
         }
@@ -87,18 +84,18 @@ teams : List Team
 teams =
     [ Team
         { name = "Team 1"
-        , members = [ "1", "2", "3" ]
+        , members = [ UniqueID.generateDefaultID ]
         , description = "The first test team"
-        , id = "1"
-        , creator = "1"
-        , admins = [ "1" ]
+        , id = UniqueID.generateDefaultID
+        , creator = UniqueID.generateDefaultID
+        , admins = [ UniqueID.generateDefaultID ]
         }
     , Team
         { name = "Team 2"
-        , members = [ "1", "2", "3" ]
+        , members = [ UniqueID.generateDefaultID ]
         , description = "The second test team"
-        , id = "2"
-        , creator = "1"
-        , admins = [ "1" ]
+        , id = UniqueID.generateDefaultID
+        , creator = UniqueID.generateDefaultID
+        , admins = [ UniqueID.generateDefaultID ]
         }
     ]
