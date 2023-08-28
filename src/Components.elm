@@ -18,6 +18,17 @@ import Route exposing (Route)
 import User exposing (User)
 
 
+globalLayout : Element msg -> Html msg
+globalLayout =
+    Element.layout
+        [ Background.color <| Colours.teal
+        , Font.color Colours.black
+        , width fill
+        , height fill
+        , defaultFont
+        ]
+
+
 fadeInWithDelay : Float -> Element.Attribute msg
 fadeInWithDelay delay =
     Element.htmlAttribute <|

@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
+import Components
 import Components.Layout as Layout exposing (Layout)
-import Element exposing (layout)
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
@@ -173,7 +173,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "BestRetro"
     , body =
-        [ layout [] <|
+        [ Components.globalLayout <|
             case model.state of
                 ViewingLoading ->
                     Loading.view
