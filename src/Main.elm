@@ -179,7 +179,7 @@ view model =
                     Loading.view
 
                 ViewingHome ->
-                    Home.view
+                    Home.view model.layout
 
                 ViewingCreateAccount createAccountModel ->
                     CreateAccount.view CreateAccountMsg model.layout createAccountModel
