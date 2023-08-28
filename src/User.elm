@@ -1,6 +1,8 @@
 module User exposing
     ( CreateUserParams
+    , LogInParams
     , User
+    , attemptToLogIn
     , createUser
     , encode
     , getId
@@ -66,6 +68,15 @@ createUser params =
 
 storeUser : Encode.Value -> Cmd msg
 storeUser user =
+    Cmd.none
+
+
+type alias LogInParams =
+    { emailAddress : String, password : String }
+
+
+attemptToLogIn : LogInParams -> Cmd msg
+attemptToLogIn _ =
     Cmd.none
 
 

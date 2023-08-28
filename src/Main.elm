@@ -120,7 +120,7 @@ update msg model =
         ( SignInMsg signInMsg, ViewingSignIn signInModel ) ->
             let
                 ( updatedModel, cmd ) =
-                    SignIn.update SignInMsg signInMsg signInModel
+                    SignIn.update SignInMsg signInMsg signInModel model.navKey
             in
             ( { model
                 | state = ViewingSignIn updatedModel
@@ -185,7 +185,7 @@ view model =
                     CreateAccount.view CreateAccountMsg model.layout createAccountModel
 
                 ViewingSignIn signInModel ->
-                    SignIn.view SignInMsg signInModel
+                    SignIn.view SignInMsg model.layout signInModel
 
                 ViewingDashboard _ dashboardModel ->
                     Dashboard.view DashboardMsg dashboardModel
