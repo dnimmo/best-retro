@@ -10,6 +10,7 @@ module Team exposing
     )
 
 import Route exposing (Route(..))
+import Time
 import UniqueID exposing (UniqueID)
 
 
@@ -64,13 +65,13 @@ getTeam id =
             teams
 
 
-createTeam : String -> UniqueID -> Team
-createTeam name userId =
+createTeam : Time.Posix -> String -> UniqueID -> Team
+createTeam time name userId =
     Team
         { name = name
         , members = [ userId ]
         , description = ""
-        , id = UniqueID.generateDefaultID
+        , id = UniqueID.generateID time
         , creator = userId
         , admins = [ userId ]
         }

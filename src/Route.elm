@@ -8,6 +8,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 type Route
     = Home
     | CreateAccount
+    | ForgottenPassword
     | SignIn
     | Dashboard
     | MyTeams
@@ -19,6 +20,7 @@ slugs =
     { landingPage = "home"
     , createAccount = "create-account"
     , signIn = "sign-in"
+    , forgottenPassword = "forgotten-password"
     , dashboard = "dashboard"
     , myTeams = "my-teams"
     , createTeam = "create-team"
@@ -38,6 +40,9 @@ toUrlString route =
 
                 SignIn ->
                     slugs.signIn
+
+                ForgottenPassword ->
+                    slugs.forgottenPassword
 
                 Dashboard ->
                     slugs.dashboard
@@ -60,6 +65,7 @@ parser =
         , Parser.map Home (s slugs.landingPage)
         , Parser.map CreateAccount (s slugs.createAccount)
         , Parser.map SignIn (s slugs.signIn)
+        , Parser.map ForgottenPassword (s slugs.forgottenPassword)
         , Parser.map Dashboard (s slugs.dashboard)
         , Parser.map MyTeams (s slugs.myTeams)
         , Parser.map CreateTeam (s slugs.createTeam)

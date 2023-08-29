@@ -7,6 +7,7 @@ import Components.Layout as Layout exposing (Layout)
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
+import Page.ForgottenPassword as ForgottenPassword
 import Page.Home as Home
 import Page.Loading as Loading
 import Page.MyTeams as MyTeams
@@ -32,6 +33,7 @@ type State
     = ViewingLoading
     | ViewingHome
     | ViewingCreateAccount CreateAccount.Model
+    | ViewingForgottenPassword ForgottenPassword.Model
     | ViewingSignIn SignIn.Model
     | ViewingDashboard User Dashboard.Model
     | ViewingMyTeams User MyTeams.Model
@@ -47,6 +49,7 @@ type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url
     | CreateAccountMsg CreateAccount.Msg
+    | ForgottenPasswordMsg ForgottenPassword.Msg
     | SignInMsg SignIn.Msg
     | DashboardMsg Dashboard.Msg
     | MyTeamsMsg MyTeams.Msg
@@ -67,6 +70,9 @@ urlChange url model =
 
                 Just Route.SignIn ->
                     ViewingSignIn SignIn.init
+
+                Just Route.ForgottenPassword ->
+                    ViewingForgottenPassword ForgottenPassword.init
 
                 Just Route.Dashboard ->
                     ViewingDashboard getUser Dashboard.init
@@ -113,6 +119,17 @@ update msg model =
             in
             ( { model
                 | state = ViewingCreateAccount updatedModel
+              }
+            , cmd
+            )
+
+        ( ForgottenPasswordMsg forgottenPasswordMsg, ViewingForgottenPassword forgottenPasswordModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    ForgottenPassword.update ForgottenPasswordMsg forgottenPasswordMsg forgottenPasswordModel
+            in
+            ( { model
+                | state = ViewingForgottenPassword updatedModel
               }
             , cmd
             )
@@ -186,6 +203,9 @@ view model =
 
                 ViewingSignIn signInModel ->
                     SignIn.view SignInMsg model.layout signInModel
+
+                ViewingForgottenPassword forgottenPasswordModel ->
+                    ForgottenPassword.view ForgottenPasswordMsg model.layout forgottenPasswordModel
 
                 ViewingDashboard _ dashboardModel ->
                     Dashboard.view DashboardMsg dashboardModel

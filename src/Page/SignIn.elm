@@ -193,7 +193,7 @@ view on layout model =
                                 , onChange = on << UpdatePassword
                                 , fullBorder = True
                                 }
-                            , Components.linkAsText Route.Home "Forgotten your password?"
+                            , Components.linkAsText Route.ForgottenPassword "Forgotten your password?"
                             , column
                                 [ width fill
                                 , height fill
