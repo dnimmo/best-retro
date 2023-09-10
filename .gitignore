@@ -1,5 +1,5 @@
-public/retro-boards.js
+client/public/retro-boards.js
 # elm-package generated files
-elm-stuff
+client/elm-stuff
 # elm-repl generated files
-repl-temp-*
+client/repl-temp-*
