@@ -12,18 +12,23 @@ module User exposing
     , storeUser
     )
 
+import Http
 import Json.Encode as Encode
+import Json.Decode.Pipeline as Decode
 import Team exposing (Team)
 import UniqueID exposing (UniqueID)
-
+import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
 
 type User
-    = User
-        { id : UniqueID
-        , name : String
-        , email : String
-        , teams : List UniqueID
-        }
+    = User Details
+
+type alias Details =
+    { id : UniqueID
+    , name : String
+    , email : String
+    , teams : List UniqueID
+    }
 
 
 getName : User -> String
@@ -71,13 +76,6 @@ storeUser user =
     Cmd.none
 
 
-type alias LogInParams =
-    { emailAddress : String, password : String }
-
-
-attemptToLogIn : LogInParams -> Cmd msg
-attemptToLogIn _ =
-    Cmd.none
 
 
 encode : User -> Encode.Value
@@ -88,3 +86,35 @@ encode (User user) =
         , ( "email", Encode.string user.email )
         , ( "teams", Encode.list UniqueID.encode user.teams )
         ]
+
+
+
+decode : Decode.Decoder User
+decode =
+    let 
+        toUser id name email teams =
+            User
+                { id = id
+                , name = name
+                , email = email
+                , teams = teams
+                }
+    in 
+    Decode.map4 toUser
+        (Decode.field "id" UniqueID.decode)
+        (Decode.field "name" Decode.string)
+        (Decode.field "email" Decode.string)
+        (Decode.field "teams" (Decode.list UniqueID.decode))
+        
+
+
+type alias LogInParams =
+    { emailAddress : String, password : String }
+
+
+attemptToLogIn : LogInParams -> (Result Http.Error User -> msg) -> Cmd msg
+attemptToLogIn _ responseMsg =
+    Http.get
+        { url = "http://localhost:8080/user"
+        , expect = Http.expectJson responseMsg decode
+        }

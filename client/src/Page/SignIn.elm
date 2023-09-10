@@ -7,7 +7,7 @@ import Element exposing (..)
 import Json.Decode as Decode
 import Route
 import User exposing (User)
-
+import Http
 
 
 -- STATE
@@ -36,7 +36,7 @@ type Msg
     = UpdateEmailAddress String
     | UpdatePassword String
     | AttemptToLogIn
-    | ReceivedLogInResult (Result Decode.Error User)
+    | ReceivedLogInResult (Result Http.Error User)
     | StoredUserUpdated (Result Decode.Error User)
     | ErrorFromDatabase String
 
@@ -61,12 +61,12 @@ handlePasswordUpdate model str =
             FatalError "Attempted to handle password update outside of ViewingLogInForm"
 
 
-handleLogInAttempt : Model -> ( Model, Cmd msg )
-handleLogInAttempt model =
+handleLogInAttempt : On msg -> Model -> ( Model, Cmd msg )
+handleLogInAttempt on model =
     case model of
         ViewingLogInForm logInParams _ ->
             ( ProcessingLogInAttempt logInParams
-            , User.attemptToLogIn logInParams
+            , User.attemptToLogIn logInParams <| on << ReceivedLogInResult
             )
 
         _ ->
@@ -75,7 +75,7 @@ handleLogInAttempt model =
             )
 
 
-handleLogInResult : Model -> Result Decode.Error User -> ( Model, Cmd msg )
+handleLogInResult : Model -> Result Http.Error User -> ( Model, Cmd msg )
 handleLogInResult model result =
     case model of
         ProcessingLogInAttempt logInParams ->
@@ -139,7 +139,7 @@ update on msg model navKey =
             )
 
         AttemptToLogIn ->
-            handleLogInAttempt model
+            handleLogInAttempt on model
 
         ReceivedLogInResult result ->
             handleLogInResult model result
