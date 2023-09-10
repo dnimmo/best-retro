@@ -1,5 +1,10 @@
+# client-side build artifacts
 client/public/retro-boards.js
 # elm-package generated files
 client/elm-stuff
 # elm-repl generated files
 client/repl-temp-*
+
+# server-side build artifacts
+server/target
+server/Cargo.lock
