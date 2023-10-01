@@ -4,7 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Components
 import Components.Layout as Layout exposing (Layout)
-import Json.Decode
+import Json.Decode as Decode
 import Logger
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
@@ -29,6 +29,7 @@ type alias Model =
     { navKey : Nav.Key
     , state : State
     , layout : Layout
+    , user : Maybe User
     }
 
 
@@ -59,61 +60,51 @@ type Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
     | TeamMsg Page.Team.Msg
-    | UserLoaded Json.Decode.Value
-
-
-getUserFromState : State -> Maybe User
-getUserFromState state =
-    case state of
-        ViewingDashboard user _ ->
-            Just user
-
-        ViewingMyTeams user _ ->
-            Just user
-
-        ViewingCreateTeam user _ ->
-            Just user
-
-        ViewingTeam user _ ->
-            Just user
-
-        _ ->
-            Nothing
+    | UserLoaded Decode.Value
 
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
 urlChange url model =
     ( { model
         | state =
-            case Route.fromUrl url of
-                Just Route.Home ->
-                    ViewingHome
-
-                Just Route.CreateAccount ->
-                    ViewingCreateAccount CreateAccount.init
-
-                Just Route.SignIn ->
-                    ViewingSignIn SignIn.init
-
-                Just Route.ForgottenPassword ->
-                    ViewingForgottenPassword ForgottenPassword.init
-
-                Just Route.Dashboard ->
-                    ViewingDashboard getUser Dashboard.init
-
-                Just Route.MyTeams ->
-                    ViewingMyTeams getUser <|
-                        MyTeams.init getUser
-
-                Just Route.CreateTeam ->
-                    ViewingCreateTeam getUser CreateTeam.init
-
-                Just (Route.Team teamId) ->
-                    ViewingTeam getUser <|
-                        Page.Team.init teamId
-
+            case model.user of
                 Nothing ->
-                    Debug.todo "Error state here"
+                    case Route.fromUrl url of
+                        Just Route.Home ->
+                            ViewingHome
+
+                        Just Route.CreateAccount ->
+                            ViewingCreateAccount CreateAccount.init
+
+                        Just Route.SignIn ->
+                            ViewingSignIn SignIn.init
+
+                        Just Route.ForgottenPassword ->
+                            ViewingForgottenPassword ForgottenPassword.init
+
+                        _ ->
+                            -- TODO: Maybe show some error in this situation
+                            ViewingHome
+
+                Just user ->
+                    case Route.fromUrl url of
+                        Just Route.Dashboard ->
+                            ViewingDashboard user Dashboard.init
+
+                        Just Route.MyTeams ->
+                            ViewingMyTeams user <|
+                                MyTeams.init user
+
+                        Just Route.CreateTeam ->
+                            ViewingCreateTeam user CreateTeam.init
+
+                        Just (Route.Team teamId) ->
+                            ViewingTeam user <|
+                                Page.Team.init teamId
+
+                        _ ->
+                            -- TODO: Maybe show some error in this situation
+                            ViewingDashboard user Dashboard.init
       }
     , Cmd.none
     )
@@ -137,7 +128,7 @@ update msg model =
             urlChange url model
 
         ( UserLoaded decodedUser, _ ) ->
-            case Json.Decode.decodeValue User.decode decodedUser of
+            case Decode.decodeValue User.decode decodedUser of
                 Ok user ->
                     ( { model
                         | state =
@@ -151,7 +142,7 @@ update msg model =
                     let
                         errorToLog =
                             "Error decoding user: "
-                                ++ Json.Decode.errorToString err
+                                ++ Decode.errorToString err
                     in
                     ( { model
                         | state = ViewingError errorToLog
@@ -288,17 +279,38 @@ subscriptions _ =
 
 
 type alias Flags =
-    {}
+    { user : Decode.Value
+    , viewportWidth : Int
+    }
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url navKey =
-    urlChange
-        url
-        { navKey = navKey
-        , state = ViewingLoading
-        , layout = Layout.getLayout 1001
-        }
+init { user, viewportWidth } url navKey =
+    let
+        userResult =
+            Decode.decodeValue User.decode user
+
+        ( maybeUser, logCmd ) =
+            case userResult of
+                Ok u ->
+                    ( Just u, Cmd.none )
+
+                Err err ->
+                    ( Nothing
+                    , Logger.logError <|
+                        "Error decoding user: "
+                            ++ Decode.errorToString err
+                    )
+
+        ( model, cmd ) =
+            urlChange url
+                { navKey = navKey
+                , state = ViewingLoading
+                , layout = Layout.getLayout viewportWidth
+                , user = maybeUser
+                }
+    in
+    ( model, Cmd.batch [ cmd, logCmd ] )
 
 
 main : Program Flags Model Msg

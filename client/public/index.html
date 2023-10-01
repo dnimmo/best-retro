@@ -183,7 +183,10 @@
         const app =
             Elm.Main.init({
                 node: document.getElementById('root'),
-                flags: {}
+                flags: {
+                    viewportWidth: window.innerWidth
+                    , user: storedUser
+                }
             })
 
         window.app = app
