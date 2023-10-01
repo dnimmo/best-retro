@@ -4,9 +4,12 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Components
 import Components.Layout as Layout exposing (Layout)
+import Json.Decode
+import Logger
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
+import Page.Error
 import Page.ForgottenPassword as ForgottenPassword
 import Page.Home as Home
 import Page.Loading as Loading
@@ -39,6 +42,7 @@ type State
     | ViewingMyTeams User MyTeams.Model
     | ViewingCreateTeam User CreateTeam.Model
     | ViewingTeam User Page.Team.Model
+    | ViewingError String
 
 
 
@@ -55,6 +59,26 @@ type Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
     | TeamMsg Page.Team.Msg
+    | UserLoaded Json.Decode.Value
+
+
+getUserFromState : State -> Maybe User
+getUserFromState state =
+    case state of
+        ViewingDashboard user _ ->
+            Just user
+
+        ViewingMyTeams user _ ->
+            Just user
+
+        ViewingCreateTeam user _ ->
+            Just user
+
+        ViewingTeam user _ ->
+            Just user
+
+        _ ->
+            Nothing
 
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
@@ -111,6 +135,29 @@ update msg model =
 
         ( UrlChanged url, _ ) ->
             urlChange url model
+
+        ( UserLoaded decodedUser, _ ) ->
+            case Json.Decode.decodeValue User.decode decodedUser of
+                Ok user ->
+                    ( { model
+                        | state =
+                            ViewingDashboard user
+                                Dashboard.init
+                      }
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    let
+                        errorToLog =
+                            "Error decoding user: "
+                                ++ Json.Decode.errorToString err
+                    in
+                    ( { model
+                        | state = ViewingError errorToLog
+                      }
+                    , Logger.logError errorToLog
+                    )
 
         ( CreateAccountMsg createAccountMsg, ViewingCreateAccount createAccountModel ) ->
             let
@@ -218,6 +265,9 @@ view model =
 
                 ViewingTeam _ teamModel ->
                     Page.Team.view TeamMsg teamModel
+
+                ViewingError errorMsg ->
+                    Page.Error.view errorMsg
         ]
     }
 
@@ -228,7 +278,9 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Sub.batch
+        [ User.userLoaded UserLoaded
+        ]
 
 
 

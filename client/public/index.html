@@ -177,6 +177,8 @@
     <main id="root"></main>
     <script src="/retro-boards.js"></script>
     <script>
+        const userKey = 'user-v1'
+        const storedUser = JSON.parse(localStorage.getItem(userKey))
 
         const app =
             Elm.Main.init({
@@ -185,6 +187,13 @@
             })
 
         window.app = app
+
+        app.ports.storeUser.subscribe(function (user) {
+            const stringifiedUser = JSON.stringify(user)
+            localStorage.setItem(userKey, stringifiedUser)
+
+            app.ports.userLoaded.send(JSON.parse(stringifiedUser))
+        })
     </script>
 </body>
 

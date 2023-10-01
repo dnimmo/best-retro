@@ -9,8 +9,8 @@ pub struct User {
 }
 
 pub const TEST_USER: User = User {
-    id: "1",
+    id: "c72c207b-0847-386d-bdbc-2e5def81cf81",
     name: "Nimmo",
     email: "dnimmo@gmail.com",
-    teams: ["1", "2"],
+    teams: ["c72c207b-0847-386d-bdbc-2e5def81cf83", "c72c207b-0847-386d-bdbc-2e5def81cf84"],
 };

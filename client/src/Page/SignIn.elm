@@ -4,10 +4,11 @@ import Browser.Navigation as Nav
 import Components exposing (currentPasswordInput, errorMessage, form, landingComponent, linkAsSecondaryButton, primaryButton, textInput)
 import Components.Layout exposing (Layout)
 import Element exposing (..)
+import Http
 import Json.Decode as Decode
 import Route
 import User exposing (User)
-import Http
+
 
 
 -- STATE

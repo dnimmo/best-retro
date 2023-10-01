@@ -1,27 +1,29 @@
-module User exposing
+port module User exposing
     ( CreateUserParams
     , LogInParams
     , User
     , attemptToLogIn
     , createUser
+    , decode
     , encode
     , getId
     , getName
     , getTeams
     , getUser
     , storeUser
+    , userLoaded
     )
 
 import Http
+import Json.Decode as Decode
 import Json.Encode as Encode
-import Json.Decode.Pipeline as Decode
 import Team exposing (Team)
 import UniqueID exposing (UniqueID)
-import Json.Decode as Decode
-import Json.Decode.Pipeline as Pipeline
+
 
 type User
     = User Details
+
 
 type alias Details =
     { id : UniqueID
@@ -71,11 +73,10 @@ createUser params =
     Cmd.none
 
 
-storeUser : Encode.Value -> Cmd msg
-storeUser user =
-    Cmd.none
+port storeUser : Encode.Value -> Cmd msg
 
 
+port userLoaded : (Decode.Value -> msg) -> Sub msg
 
 
 encode : User -> Encode.Value
@@ -88,10 +89,9 @@ encode (User user) =
         ]
 
 
-
 decode : Decode.Decoder User
 decode =
-    let 
+    let
         toUser id name email teams =
             User
                 { id = id
@@ -99,13 +99,12 @@ decode =
                 , email = email
                 , teams = teams
                 }
-    in 
+    in
     Decode.map4 toUser
         (Decode.field "id" UniqueID.decode)
         (Decode.field "name" Decode.string)
         (Decode.field "email" Decode.string)
         (Decode.field "teams" (Decode.list UniqueID.decode))
-        
 
 
 type alias LogInParams =
