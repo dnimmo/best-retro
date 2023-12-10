@@ -1,8 +1,11 @@
 module Page.CreateTeam exposing (Model, Msg, init, update, view)
 
 import Components as C
+import Components.Colours as Colours
 import Components.Input as Input
+import Components.Layout as Layout
 import Element exposing (..)
+import Element.Background as Background
 import Logger
 import Route
 
@@ -85,7 +88,11 @@ update on msg model =
 
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
-    column []
+    column
+        [ width fill
+        , Layout.commonPadding
+        , Layout.commonColumnSpacing
+        ]
         [ C.heading "Create new team"
         , case model of
             ViewingCreateTeamFields { teamName } ->

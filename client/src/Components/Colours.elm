@@ -45,7 +45,12 @@ trueBlack =
 
 mediumBlue : Element.Color
 mediumBlue =
-    rgb255 114 124 202
+    rgb255 68 150 250
+
+
+mediumBlueTransparent : Element.Color
+mediumBlueTransparent =
+    rgba255 68 150 250 0.2
 
 
 green : Element.Color
@@ -56,3 +61,13 @@ green =
 teal : Element.Color
 teal =
     rgb255 236 238 251
+
+
+skyBlue : Element.Color
+skyBlue =
+    rgb255 226 239 253
+
+
+darkBlue : Element.Color
+darkBlue =
+    rgb255 28 88 166

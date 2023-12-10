@@ -1,6 +1,9 @@
 module Components.Layout exposing
     ( Layout
     , breakpointOne
+    , commonColumnSpacing
+    , commonPadding
+    , commonRowSpacing
     , containingElement
     , dashboardSpacing
     , getLayout
@@ -10,9 +13,16 @@ module Components.Layout exposing
     , landingComponentContent
     , rightAlign
     , spacingElement
+    , withHeader
     )
 
-import Element exposing (Attribute, Element, alignRight, centerX, column, el, fill, row, width)
+import Components.Colours as Colours
+import Components.Font as Font
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Route exposing (Route)
 
 
 type Layout
@@ -118,3 +128,100 @@ imgSelect layout filename =
 
         MultipleColumn ->
             "/img/" ++ filename
+
+
+bannerGradient : Attribute msg
+bannerGradient =
+    Background.gradient
+        { angle = 1.8
+        , steps =
+            [ Colours.mediumBlue
+            , Colours.darkBlue
+            ]
+        }
+
+
+header : Route -> Element msg
+header route =
+    row
+        (Font.siteHeading
+            ++ [ width fill
+               , commonPadding
+               , bannerGradient
+               , Font.color Colours.white
+               , Border.widthEach
+                    { top = 0
+                    , bottom = 1
+                    , left = 0
+                    , right = 0
+                    }
+               , Border.color Colours.grey
+               , spacing 10
+               , height <| px 100
+               ]
+        )
+    <|
+        [ text "Best Retro"
+        ]
+
+
+footer : Element msg
+footer =
+    el
+        [ width fill
+        , paddingXY commonPaddingValue 10
+        , bannerGradient
+        , Font.color Colours.white
+        , Border.widthEach
+            { top = 1
+            , bottom = 0
+            , left = 0
+            , right = 0
+            }
+        , Border.color Colours.grey
+        ]
+    <|
+        el
+            [ alignRight
+            , Font.size 10
+            ]
+        <|
+            text "© 2024 Nimmo"
+
+
+withHeader : Route -> Element msg -> Element msg
+withHeader route element =
+    column
+        [ width fill
+        , height fill
+        ]
+        [ header route
+        , el
+            [ height fill
+            , width fill
+            , Background.color Colours.skyBlue
+            ]
+          <|
+            element
+        , footer
+        ]
+
+
+commonPaddingValue : Int
+commonPaddingValue =
+    20
+
+
+commonPadding : Attribute msg
+commonPadding =
+    padding commonPaddingValue
+
+
+commonColumnSpacing : Attribute msg
+commonColumnSpacing =
+    spacing 12
+
+
+commonRowSpacing : Attribute msg
+commonRowSpacing =
+    spacing 20

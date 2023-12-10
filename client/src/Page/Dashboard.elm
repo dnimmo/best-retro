@@ -1,7 +1,11 @@
 module Page.Dashboard exposing (Model, Msg, init, update, view)
 
-import Components
+import Components.Card as Card
+import Components.Colours as Colours
+import Components.Icons as Icons
+import Components.Layout as Layout
 import Element exposing (..)
+import Element.Font as Font
 import Route
 
 
@@ -36,10 +40,20 @@ update on msg model =
 
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
-    column []
-        [ Components.heading "Dashboard"
-        , Components.link Route.MyTeams [] "My Teams"
-        , Components.link Route.CreateTeam [] "Create New Team"
+    column
+        [ width fill
+        , height fill
+        , Layout.commonPadding
+        , Layout.commonColumnSpacing
+        ]
+        [ el
+            [ Font.color Colours.mediumBlue
+            ]
+          <|
+            Icons.fromRoute Route.Dashboard
+        , Card.link "My Teams" Route.MyTeams
+        , Card.link "Create New Team" Route.CreateTeam
+        , Card.link "Board (For Dev)" <| Route.Board "dev-board"
         ]
 
 

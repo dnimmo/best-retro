@@ -11,6 +11,7 @@ port module User exposing
     , getTeams
     , getUser
     , storeUser
+    , testUser
     , userLoaded
     )
 
@@ -46,12 +47,7 @@ getId (User { id }) =
 getUser : User
 getUser =
     -- Eventually this will actually fetch a user properly
-    User
-        { id = UniqueID.generateDefaultID
-        , name = "John Doe"
-        , email = "dnimmo@gmail.com"
-        , teams = [ UniqueID.generateDefaultID ]
-        }
+    testUser
 
 
 getTeams : User -> List Team
@@ -116,4 +112,14 @@ attemptToLogIn _ responseMsg =
     Http.get
         { url = "http://localhost:8080/user"
         , expect = Http.expectJson responseMsg decode
+        }
+
+
+testUser : User
+testUser =
+    User
+        { id = UniqueID.generateDefaultID
+        , name = "John Doe"
+        , email = "dnimmo@gmail.com"
+        , teams = [ UniqueID.generateDefaultID ]
         }

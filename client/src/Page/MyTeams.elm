@@ -1,7 +1,10 @@
 module Page.MyTeams exposing (Model, Msg, init, update, view)
 
 import Components as C
+import Components.Colours as Colours
+import Components.Layout as Layout exposing (Layout)
 import Element exposing (..)
+import Element.Background as Background
 import Route
 import Team exposing (Team)
 import User exposing (User)
@@ -57,7 +60,12 @@ teamView teams =
 
 view : (Msg -> msg) -> Model -> Element msg
 view on model =
-    column []
+    column
+        [ width fill
+        , height fill
+        , Layout.commonPadding
+        , Layout.commonColumnSpacing
+        ]
         [ C.heading "My Teams"
         , case model of
             NotAMemberOfAnyTeam ->

@@ -6,6 +6,7 @@ import Components
 import Components.Layout as Layout exposing (Layout)
 import Json.Decode as Decode
 import Logger
+import Page.Board as Board
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
@@ -15,10 +16,10 @@ import Page.Home as Home
 import Page.Loading as Loading
 import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
-import Page.Team
+import Page.Team as Team
 import Route
 import Url exposing (Url)
-import User exposing (User, getUser)
+import User exposing (User)
 
 
 
@@ -42,7 +43,8 @@ type State
     | ViewingDashboard User Dashboard.Model
     | ViewingMyTeams User MyTeams.Model
     | ViewingCreateTeam User CreateTeam.Model
-    | ViewingTeam User Page.Team.Model
+    | ViewingTeam User Team.Model
+    | ViewingBoard User Board.Model
     | ViewingError String
 
 
@@ -59,7 +61,8 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
-    | TeamMsg Page.Team.Msg
+    | TeamMsg Team.Msg
+    | BoardMsg Board.Msg
     | UserLoaded Decode.Value
 
 
@@ -100,7 +103,11 @@ urlChange url model =
 
                         Just (Route.Team teamId) ->
                             ViewingTeam user <|
-                                Page.Team.init teamId
+                                Team.init teamId
+
+                        Just (Route.Board boardId) ->
+                            ViewingBoard user <|
+                                Board.init boardId
 
                         _ ->
                             -- TODO: Maybe show some error in this situation
@@ -246,19 +253,22 @@ view model =
                     ForgottenPassword.view ForgottenPasswordMsg model.layout forgottenPasswordModel
 
                 ViewingDashboard _ dashboardModel ->
-                    Dashboard.view DashboardMsg dashboardModel
+                    Layout.withHeader Route.Home <| Dashboard.view DashboardMsg dashboardModel
 
                 ViewingMyTeams _ myTeamsModel ->
-                    MyTeams.view MyTeamsMsg myTeamsModel
+                    Layout.withHeader Route.MyTeams <| MyTeams.view MyTeamsMsg myTeamsModel
 
                 ViewingCreateTeam _ createTeamModel ->
-                    CreateTeam.view CreateTeamMsg createTeamModel
+                    Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
 
                 ViewingTeam _ teamModel ->
-                    Page.Team.view TeamMsg teamModel
+                    Layout.withHeader (Route.Team "") <| Team.view TeamMsg teamModel
+
+                ViewingBoard _ boardModel ->
+                    Layout.withHeader (Route.Board "") <| Board.view BoardMsg boardModel
 
                 ViewingError errorMsg ->
-                    Page.Error.view errorMsg
+                    Layout.withHeader Route.Error <| Page.Error.view errorMsg
         ]
     }
 
