@@ -161,7 +161,7 @@ header route =
                ]
         )
     <|
-        [ text "Best Retro"
+        [ el [ centerX ] <| text "Best Retro"
         ]
 
 

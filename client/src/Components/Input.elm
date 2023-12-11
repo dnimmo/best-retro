@@ -3,10 +3,18 @@ module Components.Input exposing
     , currentPasswordDisplayed
     , currentPasswordHidden
     , form
+    , inputFieldWithInsetButton
     , plainText
     )
 
+import Components exposing (corners, edges)
+import Components.Colours as Colours
+import Components.Icons as Icons
+import Components.Layout as Layout
 import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import Html.Events
 import Json.Decode as Decode
@@ -134,3 +142,68 @@ form onEnterMsg childElement =
         , width fill
         ]
         childElement
+
+
+inputFieldWithInsetButton :
+    { onChange : String -> msg
+    , value : String
+    , labelString : String
+    , onSubmit : msg
+    }
+    -> Element msg
+inputFieldWithInsetButton { onChange, value, labelString, onSubmit } =
+    column
+        [ Layout.commonColumnSpacing
+        , width fill
+        , onEnter onSubmit
+        ]
+        [ el [] <| text labelString
+        , row [ width fill ]
+            [ Input.text
+                [ Border.color Colours.grey
+                , Border.widthEach
+                    { edges
+                        | top = 1
+                        , bottom = 1
+                        , left = 1
+                    }
+                , Border.roundEach
+                    { corners
+                        | topLeft = 5
+                        , bottomLeft = 5
+                    }
+                ]
+                { onChange = onChange
+                , text = value
+                , label = Input.labelHidden labelString
+                , placeholder = Nothing
+                }
+            , Input.button
+                [ Background.color Colours.white
+                , height fill
+                , paddingXY 10 0
+                , Border.color Colours.grey
+                , Border.widthEach
+                    { edges
+                        | top = 1
+                        , bottom = 1
+                        , right = 1
+                    }
+                , Border.roundEach
+                    { corners
+                        | topRight = 5
+                        , bottomRight = 5
+                    }
+                ]
+                { onPress = Just onSubmit
+                , label =
+                    el
+                        [ Border.rounded 5
+                        , Border.color Colours.grey
+                        , Font.color Colours.white
+                        , Background.color Colours.mediumBlue
+                        ]
+                        Icons.add
+                }
+            ]
+        ]

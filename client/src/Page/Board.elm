@@ -1,6 +1,8 @@
 module Page.Board exposing (Model, Msg, init, update, view)
 
 import Components
+import Components.Icons as Icons
+import Components.Input as Input
 import Components.Layout as Layout
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
@@ -28,13 +30,13 @@ type State
 
 
 type Msg
-    = Msg
+    = UpdateField String
 
 
 update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
 update on msg model =
     case msg of
-        Msg ->
+        UpdateField str ->
             ( model
             , Cmd.none
             )
@@ -86,12 +88,64 @@ addingDiscussionItemsView on discussionItems =
         , height fill
         , Layout.commonColumnSpacing
         ]
-        [ el [] <| text "TO DO: Controls here"
+        [ column
+            [ Layout.commonColumnSpacing
+            , width fill
+            ]
+            [ column
+                [ width fill
+                , Layout.commonColumnSpacing
+                ]
+                [ row
+                    [ Layout.commonRowSpacing
+                    , width fill
+                    ]
+                    [ el [] Icons.start
+                    , el [] <| text "Start"
+                    ]
+                , Input.inputFieldWithInsetButton
+                    { onChange = on << UpdateField
+                    , value = ""
+                    , labelString = "What should we start doing?"
+                    , onSubmit = on <| UpdateField "TODO: Submit"
+                    }
+                ]
+            , column
+                [ width fill
+                , Layout.commonColumnSpacing
+                ]
+                [ row [ Layout.commonRowSpacing ]
+                    [ el [] Icons.stop
+                    , el [] <| text "Stop"
+                    ]
+                , Input.inputFieldWithInsetButton
+                    { onChange = on << UpdateField
+                    , value = ""
+                    , labelString = "What should we stop doing?"
+                    , onSubmit = on <| UpdateField "TODO: Submit"
+                    }
+                ]
+            , column
+                [ width fill
+                , Layout.commonColumnSpacing
+                ]
+                [ row [ Layout.commonRowSpacing ]
+                    [ el [] Icons.continue
+                    , el [] <| text "Continue"
+                    ]
+                , Input.inputFieldWithInsetButton
+                    { onChange = on << UpdateField
+                    , value = ""
+                    , labelString = "What should we keep doing?"
+                    , onSubmit = on <| UpdateField "TODO: Submit"
+                    }
+                ]
+            ]
         , if List.isEmpty discussionItems then
             emptyDiscussionItemView
 
           else
-            el [] <| text "TO DO: Discussion items here"
+            none
         ]
 
 
@@ -103,8 +157,7 @@ view on (Model boardId state) =
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ Components.heading "Board"
-        , case state of
+        [ case state of
             AddingDiscussionItems discussionItems ->
                 addingDiscussionItemsView on discussionItems
         , Components.link Route.Dashboard [] "Back to dashboard"

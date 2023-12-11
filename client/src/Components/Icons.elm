@@ -45,6 +45,24 @@ home =
         Icons.home iconSize IconTypes.Inherit
 
 
+start : Element msg
+start =
+    html <|
+        Icons.flag iconSize defaultIconColour
+
+
+stop : Element msg
+stop =
+    html <|
+        Icons.front_hand iconSize defaultIconColour
+
+
+continue : Element msg
+continue =
+    html <|
+        Icons.restart_alt iconSize defaultIconColour
+
+
 fromRoute : Route -> Element msg
 fromRoute route =
     case route of
@@ -53,3 +71,9 @@ fromRoute route =
 
         _ ->
             rightArrowInternal Inherit
+
+
+add : Element msg
+add =
+    html <|
+        Icons.add iconSize IconTypes.Inherit
