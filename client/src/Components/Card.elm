@@ -19,22 +19,27 @@ type CardVariant msg
     | Link Route
 
 
+styles : List (Element.Attribute msg)
+styles =
+    [ Border.rounded 5
+    , Backround.color Colours.white
+    , paddingXY 15 25
+    , width fill
+    , Border.shadow
+        { offset = ( 10, 10 )
+        , blur = 10
+        , color = Colours.mediumBlueTransparent
+        , size = 1
+        }
+    ]
+
+
 card : Card msg -> Element msg
 card (Card str variant) =
     let
         element =
             column
-                [ Border.rounded 5
-                , Backround.color Colours.white
-                , paddingXY 15 25
-                , width fill
-                , Border.shadow
-                    { offset = ( 10, 10 )
-                    , blur = 10
-                    , color = Colours.mediumBlueTransparent
-                    , size = 1
-                    }
-                ]
+                styles
             <|
                 case variant of
                     Display ->

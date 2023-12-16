@@ -12,6 +12,11 @@ iconSize =
     30
 
 
+smallIconSize : Int
+smallIconSize =
+    20
+
+
 type Colour
     = Default
     | Inherit
@@ -48,19 +53,19 @@ home =
 start : Element msg
 start =
     html <|
-        Icons.flag iconSize defaultIconColour
+        Icons.flag 20 IconTypes.Inherit
 
 
 stop : Element msg
 stop =
     html <|
-        Icons.front_hand iconSize defaultIconColour
+        Icons.front_hand 20 IconTypes.Inherit
 
 
 continue : Element msg
 continue =
     html <|
-        Icons.restart_alt iconSize defaultIconColour
+        Icons.restart_alt 20 IconTypes.Inherit
 
 
 fromRoute : Route -> Element msg
@@ -77,3 +82,27 @@ add : Element msg
 add =
     html <|
         Icons.add iconSize IconTypes.Inherit
+
+
+controls : Element msg
+controls =
+    html <|
+        Icons.settings iconSize defaultIconColour
+
+
+facilitator : Element msg
+facilitator =
+    html <|
+        Icons.supervisor_account iconSize defaultIconColour
+
+
+startSession : Element msg
+startSession =
+    html <|
+        Icons.start smallIconSize IconTypes.Inherit
+
+
+back : Element msg
+back =
+    html <|
+        Icons.arrow_back smallIconSize IconTypes.Inherit

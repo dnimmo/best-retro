@@ -1,11 +1,17 @@
 module Page.Board exposing (Model, Msg, init, update, view)
 
-import Components
+import Components exposing (edges)
+import Components.Card as Card
+import Components.Colours as Colours
+import Components.Font as Font
 import Components.Icons as Icons
 import Components.Input as Input
-import Components.Layout as Layout
+import Components.Label as Label
+import Components.Layout as Layout exposing (Layout, commonRowSpacing)
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
 import Route
 
 
@@ -22,7 +28,8 @@ type Model
 
 
 type State
-    = AddingDiscussionItems (List DiscussionItem)
+    = ReadyToStart
+    | AddingDiscussionItems (List DiscussionItem)
 
 
 
@@ -31,13 +38,25 @@ type State
 
 type Msg
     = UpdateField String
+    | StartSession
+    | BackToStart
 
 
 update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update on msg model =
+update on msg ((Model boardId state) as model) =
     case msg of
         UpdateField str ->
             ( model
+            , Cmd.none
+            )
+
+        StartSession ->
+            ( Model boardId <| AddingDiscussionItems DiscussionItem.devDiscussionItems
+            , Cmd.none
+            )
+
+        BackToStart ->
+            ( Model boardId ReadyToStart
             , Cmd.none
             )
 
@@ -81,64 +100,90 @@ emptyDiscussionItemView =
             ]
 
 
-addingDiscussionItemsView : (Msg -> msg) -> List DiscussionItem -> Element msg
-addingDiscussionItemsView on discussionItems =
+type Category
+    = Start
+    | Stop
+    | Continue
+
+
+discussionItemCard : Category -> DiscussionItem -> Element msg
+discussionItemCard category discussionItem =
+    column Card.styles
+        [ row [ width fill ]
+            [ paragraph []
+                [ text <|
+                    DiscussionItem.getContent discussionItem
+                ]
+            ]
+        ]
+
+
+discussionColumnStyles : List (Attribute msg)
+discussionColumnStyles =
+    [ width fill
+    , Layout.commonColumnSpacing
+    , alignTop
+    ]
+
+
+discussionItemColumn : List (Element msg) -> Element msg
+discussionItemColumn =
+    column
+        [ Layout.commonColumnSpacing
+        , paddingXY 0 20
+        , width fill
+        ]
+
+
+addingDiscussionItemsView : Layout -> (Msg -> msg) -> List DiscussionItem -> Element msg
+addingDiscussionItemsView layout on discussionItems =
     column
         [ width fill
         , height fill
         , Layout.commonColumnSpacing
         ]
-        [ column
-            [ Layout.commonColumnSpacing
+        [ Layout.containingElement layout
+            [ Layout.extraColumnSpacing
             , width fill
             ]
             [ column
-                [ width fill
-                , Layout.commonColumnSpacing
-                ]
-                [ row
-                    [ Layout.commonRowSpacing
-                    , width fill
-                    ]
-                    [ el [] Icons.start
-                    , el [] <| text "Start"
-                    ]
+                discussionColumnStyles
+                [ Label.start
                 , Input.inputFieldWithInsetButton
                     { onChange = on << UpdateField
                     , value = ""
                     , labelString = "What should we start doing?"
                     , onSubmit = on <| UpdateField "TODO: Submit"
                     }
+                , discussionItemColumn <|
+                    List.map (discussionItemCard Start) <|
+                        DiscussionItem.getAllStartItems discussionItems
                 ]
             , column
-                [ width fill
-                , Layout.commonColumnSpacing
-                ]
-                [ row [ Layout.commonRowSpacing ]
-                    [ el [] Icons.stop
-                    , el [] <| text "Stop"
-                    ]
+                discussionColumnStyles
+                [ Label.stop
                 , Input.inputFieldWithInsetButton
                     { onChange = on << UpdateField
                     , value = ""
                     , labelString = "What should we stop doing?"
                     , onSubmit = on <| UpdateField "TODO: Submit"
                     }
+                , discussionItemColumn <|
+                    List.map (discussionItemCard Stop) <|
+                        DiscussionItem.getAllStopItems discussionItems
                 ]
             , column
-                [ width fill
-                , Layout.commonColumnSpacing
-                ]
-                [ row [ Layout.commonRowSpacing ]
-                    [ el [] Icons.continue
-                    , el [] <| text "Continue"
-                    ]
+                discussionColumnStyles
+                [ Label.continue
                 , Input.inputFieldWithInsetButton
                     { onChange = on << UpdateField
                     , value = ""
                     , labelString = "What should we keep doing?"
                     , onSubmit = on <| UpdateField "TODO: Submit"
                     }
+                , discussionItemColumn <|
+                    List.map (discussionItemCard Continue) <|
+                        DiscussionItem.getAllContinueItems discussionItems
                 ]
             ]
         , if List.isEmpty discussionItems then
@@ -149,17 +194,64 @@ addingDiscussionItemsView on discussionItems =
         ]
 
 
-view : (Msg -> msg) -> Model -> Element msg
-view on (Model boardId state) =
+boardControls : State -> (Msg -> msg) -> Element msg
+boardControls state on =
+    row
+        [ Border.width 1
+        , width fill
+        , padding 20
+        , Background.color Colours.mediumBlueTransparent
+        , Border.rounded 5
+        , Border.color Colours.darkBlue
+        ]
+        [ Icons.controls
+        , row
+            [ alignRight
+            , commonRowSpacing
+            ]
+            (case state of
+                ReadyToStart ->
+                    [ Input.rightIconButton
+                        { onPress = on StartSession
+                        , icon = Icons.startSession
+                        , labelText = "Start"
+                        }
+                    ]
+
+                AddingDiscussionItems _ ->
+                    [ Input.leftIconButton
+                        { onPress = on BackToStart
+                        , icon = Icons.back
+                        , labelText = "Back"
+                        }
+                    ]
+            )
+        ]
+
+
+view : Layout -> (Msg -> msg) -> Model -> Element msg
+view layout on (Model boardId state) =
     column
         [ width fill
         , height fill
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ case state of
+        [ row [ Layout.lessRowSpacing ]
+            [ el [] Icons.facilitator
+            , el Font.label <| text <| "Facilitator: " ++ "TODO: Get user name"
+            ]
+        , boardControls state on -- TODO: Only show these for the facilitator
+        , case state of
+            ReadyToStart ->
+                el
+                    [ width fill
+                    , height fill
+                    ]
+                    none
+
             AddingDiscussionItems discussionItems ->
-                addingDiscussionItemsView on discussionItems
+                addingDiscussionItemsView layout on discussionItems
         , Components.link Route.Dashboard [] "Back to dashboard"
         ]
 
@@ -167,4 +259,4 @@ view on (Model boardId state) =
 init : String -> Model
 init boardId =
     -- TODO: Add Loading state and fetch board here
-    Model boardId <| AddingDiscussionItems []
+    Model boardId <| ReadyToStart

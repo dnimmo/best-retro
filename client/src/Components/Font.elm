@@ -16,3 +16,9 @@ title =
     [ Font.size 20
     , Font.bold
     ]
+
+
+label : List (Attribute msg)
+label =
+    [ Font.size 16
+    ]

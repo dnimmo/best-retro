@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
+import Browser.Events
 import Browser.Navigation as Nav
 import Components
 import Components.Layout as Layout exposing (Layout)
@@ -55,6 +56,7 @@ type State
 type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url
+    | ViewportResized Int
     | CreateAccountMsg CreateAccount.Msg
     | ForgottenPasswordMsg ForgottenPassword.Msg
     | SignInMsg SignIn.Msg
@@ -120,6 +122,13 @@ urlChange url model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.state ) of
+        ( ViewportResized viewportWidth, _ ) ->
+            ( { model
+                | layout = Layout.getLayout viewportWidth
+              }
+            , Cmd.none
+            )
+
         ( UrlRequested urlRequest, _ ) ->
             ( model
             , case urlRequest of
@@ -223,6 +232,17 @@ update msg model =
             , cmd
             )
 
+        ( BoardMsg boardMsg, ViewingBoard user boardModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    Board.update BoardMsg boardMsg boardModel
+            in
+            ( { model
+                | state = ViewingBoard user updatedModel
+              }
+            , cmd
+            )
+
         _ ->
             ( model, Cmd.none )
 
@@ -265,7 +285,7 @@ view model =
                     Layout.withHeader (Route.Team "") <| Team.view TeamMsg teamModel
 
                 ViewingBoard _ boardModel ->
-                    Layout.withHeader (Route.Board "") <| Board.view BoardMsg boardModel
+                    Layout.withHeader (Route.Board "") <| Board.view model.layout BoardMsg boardModel
 
                 ViewingError errorMsg ->
                     Layout.withHeader Route.Error <| Page.Error.view errorMsg
@@ -281,6 +301,7 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ User.userLoaded UserLoaded
+        , Browser.Events.onResize (\width _ -> ViewportResized width)
         ]
 
 

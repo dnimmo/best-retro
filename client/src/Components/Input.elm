@@ -4,13 +4,15 @@ module Components.Input exposing
     , currentPasswordHidden
     , form
     , inputFieldWithInsetButton
+    , leftIconButton
     , plainText
+    , rightIconButton
     )
 
 import Components exposing (corners, edges)
 import Components.Colours as Colours
 import Components.Icons as Icons
-import Components.Layout as Layout
+import Components.Layout as Layout exposing (commonRowSpacing)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -133,6 +135,52 @@ actionButton { onPress, labelString } =
         { onPress = Just onPress
         , label = text labelString
         }
+
+
+type IconPosition
+    = Left
+    | Right
+
+
+iconButton : IconPosition -> { onPress : msg, icon : Element msg, labelText : String } -> Element msg
+iconButton iconPosition { onPress, icon, labelText } =
+    let
+        rowContents =
+            [ el
+                []
+                icon
+            , el [ Font.size 16 ] <| text labelText
+            ]
+    in
+    Input.button []
+        { onPress = Just onPress
+        , label =
+            row
+                [ Border.rounded 5
+                , Border.color Colours.grey
+                , Font.color Colours.white
+                , Background.color Colours.mediumBlue
+                , paddingXY 10 5
+                , commonRowSpacing
+                ]
+            <|
+                case iconPosition of
+                    Left ->
+                        rowContents
+
+                    Right ->
+                        List.reverse rowContents
+        }
+
+
+leftIconButton : { onPress : msg, icon : Element msg, labelText : String } -> Element msg
+leftIconButton params =
+    iconButton Left params
+
+
+rightIconButton : { onPress : msg, icon : Element msg, labelText : String } -> Element msg
+rightIconButton params =
+    iconButton Right params
 
 
 form : msg -> Element msg -> Element msg

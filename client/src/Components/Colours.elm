@@ -1,6 +1,7 @@
 module Components.Colours exposing (..)
 
 import Element exposing (rgb255, rgba255)
+import Element.Background as Background
 
 
 orangeRed : Element.Color
@@ -71,3 +72,14 @@ skyBlue =
 darkBlue : Element.Color
 darkBlue =
     rgb255 28 88 166
+
+
+gradientBlue : Element.Attribute msg
+gradientBlue =
+    Background.gradient
+        { angle = 1.8
+        , steps =
+            [ mediumBlue
+            , darkBlue
+            ]
+        }

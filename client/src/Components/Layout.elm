@@ -6,11 +6,13 @@ module Components.Layout exposing
     , commonRowSpacing
     , containingElement
     , dashboardSpacing
+    , extraColumnSpacing
     , getLayout
     , imgSelect
     , isSingleColumn
     , label
     , landingComponentContent
+    , lessRowSpacing
     , rightAlign
     , spacingElement
     , withHeader
@@ -130,24 +132,13 @@ imgSelect layout filename =
             "/img/" ++ filename
 
 
-bannerGradient : Attribute msg
-bannerGradient =
-    Background.gradient
-        { angle = 1.8
-        , steps =
-            [ Colours.mediumBlue
-            , Colours.darkBlue
-            ]
-        }
-
-
 header : Route -> Element msg
 header route =
     row
         (Font.siteHeading
             ++ [ width fill
                , commonPadding
-               , bannerGradient
+               , Colours.gradientBlue
                , Font.color Colours.white
                , Border.widthEach
                     { top = 0
@@ -170,7 +161,7 @@ footer =
     el
         [ width fill
         , paddingXY commonPaddingValue 10
-        , bannerGradient
+        , Colours.gradientBlue
         , Font.color Colours.white
         , Border.widthEach
             { top = 1
@@ -219,9 +210,19 @@ commonPadding =
 
 commonColumnSpacing : Attribute msg
 commonColumnSpacing =
-    spacing 12
+    spacing 16
+
+
+extraColumnSpacing : Attribute msg
+extraColumnSpacing =
+    spacing 40
 
 
 commonRowSpacing : Attribute msg
 commonRowSpacing =
     spacing 20
+
+
+lessRowSpacing : Attribute msg
+lessRowSpacing =
+    spacing 5
