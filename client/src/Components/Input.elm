@@ -12,7 +12,7 @@ module Components.Input exposing
 import Components exposing (corners, edges)
 import Components.Colours as Colours
 import Components.Icons as Icons
-import Components.Layout as Layout exposing (commonRowSpacing)
+import Components.Layout as Layout
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -161,7 +161,7 @@ iconButton iconPosition { onPress, icon, labelText } =
                 , Font.color Colours.white
                 , Background.color Colours.mediumBlue
                 , paddingXY 10 5
-                , commonRowSpacing
+                , Layout.lessRowSpacing
                 ]
             <|
                 case iconPosition of
