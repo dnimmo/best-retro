@@ -1,5 +1,6 @@
 module Page.Board exposing (Model, Msg, init, update, view)
 
+import ActionItem exposing (ActionItem)
 import Components
 import Components.Colours as Colours
 import Components.Font as Font
@@ -11,6 +12,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Page.Board.AddingItems as AddingItems
+import Page.Board.DiscussingPreviousActions as PreviousActions
 import Page.Board.Intro as Intro
 import Route
 
@@ -29,6 +31,7 @@ type Model
 
 type State
     = ReadyToStart
+    | DiscussingPreviousActions (List ActionItem)
     | AddingDiscussionItems (List DiscussionItem)
 
 
@@ -38,8 +41,10 @@ type State
 
 type Msg
     = UpdateField String
-    | StartSession
+    | StartAddingItems
+    | ViewPreviousActions
     | BackToStart
+    | MarkActionAsComplete ActionItem
 
 
 update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
@@ -50,13 +55,23 @@ update on msg ((Model boardId state) as model) =
             , Cmd.none
             )
 
-        StartSession ->
+        StartAddingItems ->
             ( Model boardId <| AddingDiscussionItems DiscussionItem.devDiscussionItems
+            , Cmd.none
+            )
+
+        ViewPreviousActions ->
+            ( Model boardId <| DiscussingPreviousActions ActionItem.devActionItems
             , Cmd.none
             )
 
         BackToStart ->
             ( Model boardId ReadyToStart
+            , Cmd.none
+            )
+
+        MarkActionAsComplete actionItem ->
+            ( model
             , Cmd.none
             )
 
@@ -83,15 +98,28 @@ boardControls state on =
             (case state of
                 ReadyToStart ->
                     [ Input.rightIconButton
-                        { onPress = on StartSession
+                        { onPress = on ViewPreviousActions
                         , icon = Icons.startSession
                         , labelText = "Start"
                         }
                     ]
 
-                AddingDiscussionItems _ ->
+                DiscussingPreviousActions _ ->
                     [ Input.leftIconButton
                         { onPress = on BackToStart
+                        , icon = Icons.back
+                        , labelText = "Back"
+                        }
+                    , Input.rightIconButton
+                        { onPress = on StartAddingItems
+                        , icon = Icons.forward
+                        , labelText = "Add items"
+                        }
+                    ]
+
+                AddingDiscussionItems _ ->
+                    [ Input.leftIconButton
+                        { onPress = on ViewPreviousActions
                         , icon = Icons.back
                         , labelText = "Back"
                         }
@@ -116,6 +144,9 @@ view layout on (Model boardId state) =
         , case state of
             ReadyToStart ->
                 Intro.view
+
+            DiscussingPreviousActions previousActions ->
+                PreviousActions.view layout { markActionAsComplete = on << MarkActionAsComplete } previousActions
 
             AddingDiscussionItems discussionItems ->
                 AddingItems.view layout

@@ -106,3 +106,21 @@ back : Element msg
 back =
     html <|
         Icons.arrow_back smallIconSize IconTypes.Inherit
+
+
+forward : Element msg
+forward =
+    html <|
+        Icons.arrow_forward smallIconSize IconTypes.Inherit
+
+
+status : Element msg
+status =
+    html <|
+        Icons.info smallIconSize defaultIconColour
+
+
+user : Element msg
+user =
+    html <|
+        Icons.person smallIconSize defaultIconColour

@@ -9,4 +9,6 @@ view =
         [ width fill
         , height fill
         ]
-        [ text "Some text here plz Nimmo" ]
+        [ paragraph []
+            [ text "Some text here plz Nimmo. Explain what is going to happen in the Retro, with some text that only appears if there are actions " ]
+        ]

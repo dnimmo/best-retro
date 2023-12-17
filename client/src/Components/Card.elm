@@ -1,8 +1,10 @@
 module Components.Card exposing (..)
 
+import ActionItem exposing (ActionItem)
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
+import Components.Layout as Layout
 import Element exposing (..)
 import Element.Background as Backround
 import Element.Border as Border
@@ -15,7 +17,7 @@ type Card msg
 
 type CardVariant msg
     = Display
-    | Action msg
+    | Action ActionItem msg
     | Link Route
 
 
@@ -24,6 +26,7 @@ styles =
     [ Border.rounded 5
     , Backround.color Colours.white
     , paddingXY 15 25
+    , Layout.commonColumnSpacing
     , width fill
     , Border.shadow
         { offset = ( 10, 10 )
@@ -46,8 +49,32 @@ card (Card str variant) =
                         [ text str
                         ]
 
-                    Action msg ->
-                        [ text <| str ++ "TODO action"
+                    Action item msg ->
+                        [ row [ width fill ]
+                            [ paragraph [ width fill ]
+                                [ el [ width fill ] <| text str
+                                ]
+                            , column
+                                [ alignRight
+                                , height fill
+                                , alignTop
+                                , Layout.commonColumnSpacing
+                                ]
+                                [ row [ Layout.lessRowSpacing ]
+                                    [ el [] Icons.user
+                                    , el [] <|
+                                        text <|
+                                            ActionItem.getAssignee item
+                                    ]
+                                , row [ Layout.lessRowSpacing ]
+                                    [ el [] Icons.status
+                                    , el [] <|
+                                        text <|
+                                            ActionItem.statusToString <|
+                                                ActionItem.getStatus item
+                                    ]
+                                ]
+                            ]
                         ]
 
                     Link _ ->
@@ -79,9 +106,11 @@ link str route =
     card <| Card str <| Link route
 
 
-action : String -> msg -> Element msg
-action str msg =
-    card <| Card str <| Action msg
+action : ActionItem -> msg -> Element msg
+action item msg =
+    card <|
+        Card (ActionItem.getContent item) <|
+            Action item msg
 
 
 display : String -> Element msg
