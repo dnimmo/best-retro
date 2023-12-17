@@ -75,4 +75,12 @@ devActionItems =
         , content = "Chirp loudly"
         , status = ToDo
         }
+    , ActionItem
+        { id = "2"
+        , author = "Dante"
+        , assignee = "Dante"
+        , date = Time.millisToPosix 0
+        , content = "Be a handsome little man"
+        , status = InProgress
+        }
     ]

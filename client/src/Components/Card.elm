@@ -1,6 +1,7 @@
 module Components.Card exposing (..)
 
 import ActionItem exposing (ActionItem)
+import Components exposing (edges)
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
@@ -27,7 +28,8 @@ styles =
     , Backround.color Colours.white
     , paddingXY 15 25
     , Layout.commonColumnSpacing
-    , width fill
+    , width (fill |> minimum 360)
+    , height fill
     , Border.shadow
         { offset = ( 10, 10 )
         , blur = 10
@@ -50,15 +52,28 @@ card (Card str variant) =
                         ]
 
                     Action item msg ->
-                        [ row [ width fill ]
-                            [ paragraph [ width fill ]
+                        [ row
+                            [ width fill
+                            , height fill
+                            ]
+                            [ paragraph
+                                [ width fill
+                                , height fill
+                                ]
                                 [ el [ width fill ] <| text str
                                 ]
                             , column
                                 [ alignRight
                                 , height fill
+                                , width (fill |> minimum 150)
                                 , alignTop
                                 , Layout.commonColumnSpacing
+                                , Border.widthEach
+                                    { edges
+                                        | left = 1
+                                    }
+                                , paddingXY 10 0
+                                , Border.color Colours.mediumBlue
                                 ]
                                 [ row [ Layout.lessRowSpacing ]
                                     [ el [] Icons.user
