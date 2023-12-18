@@ -2,6 +2,7 @@ module Components.Card exposing (..)
 
 import ActionItem exposing (ActionItem)
 import Components exposing (edges)
+import Components.Animation as Animation
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
@@ -36,6 +37,7 @@ styles =
         , color = Colours.mediumBlueTransparent
         , size = 1
         }
+    , Animation.fadeIn
     ]
 
 

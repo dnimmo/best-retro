@@ -42,6 +42,7 @@ type State
 type Msg
     = UpdateField String
     | StartAddingItems
+    | PopulateDummyItems
     | ViewPreviousActions
     | BackToStart
     | MarkActionAsComplete ActionItem
@@ -56,6 +57,11 @@ update on msg ((Model boardId state) as model) =
             )
 
         StartAddingItems ->
+            ( Model boardId <| AddingDiscussionItems []
+            , Cmd.none
+            )
+
+        PopulateDummyItems ->
             ( Model boardId <| AddingDiscussionItems DiscussionItem.devDiscussionItems
             , Cmd.none
             )
@@ -117,12 +123,21 @@ boardControls state on =
                         }
                     ]
 
-                AddingDiscussionItems _ ->
+                AddingDiscussionItems items ->
                     [ Input.leftIconButton
                         { onPress = on ViewPreviousActions
                         , icon = Icons.back
                         , labelText = "Back"
                         }
+                    , if List.isEmpty items then
+                        Input.rightIconButton
+                            { onPress = on PopulateDummyItems
+                            , icon = Icons.forward
+                            , labelText = "Add dummy items"
+                            }
+
+                      else
+                        none
                     ]
             )
         ]
