@@ -5,6 +5,7 @@ import Browser.Events
 import Browser.Navigation as Nav
 import Components
 import Components.Layout as Layout exposing (Layout)
+import Http exposing (Error(..))
 import Json.Decode as Decode
 import Logger
 import Page.Board as Board
@@ -19,6 +20,7 @@ import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
 import Page.Team as Team
 import Route
+import Time
 import Url exposing (Url)
 import User exposing (User)
 
@@ -32,6 +34,7 @@ type alias Model =
     , state : State
     , layout : Layout
     , user : Maybe User
+    , now : Time.Posix
     }
 
 
@@ -54,7 +57,8 @@ type State
 
 
 type Msg
-    = UrlRequested Browser.UrlRequest
+    = Tick Time.Posix
+    | UrlRequested Browser.UrlRequest
     | UrlChanged Url
     | ViewportResized Int
     | CreateAccountMsg CreateAccount.Msg
@@ -109,7 +113,7 @@ urlChange url model =
 
                         Just (Route.Board boardId) ->
                             ViewingBoard user <|
-                                Board.init boardId
+                                Board.init boardId model.now
 
                         _ ->
                             -- TODO: Maybe show some error in this situation
@@ -235,7 +239,7 @@ update msg model =
         ( BoardMsg boardMsg, ViewingBoard user boardModel ) ->
             let
                 ( updatedModel, cmd ) =
-                    Board.update BoardMsg boardMsg boardModel
+                    Board.update model.now BoardMsg boardMsg boardModel
             in
             ( { model
                 | state = ViewingBoard user updatedModel
@@ -298,10 +302,16 @@ view model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions { state } =
     Sub.batch
         [ User.userLoaded UserLoaded
         , Browser.Events.onResize (\width _ -> ViewportResized width)
+        , case state of
+            ViewingBoard _ _ ->
+                Time.every 1000 Tick
+
+            _ ->
+                Sub.none
         ]
 
 
@@ -312,11 +322,12 @@ subscriptions _ =
 type alias Flags =
     { user : Decode.Value
     , viewportWidth : Int
+    , now : Int
     }
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init { user, viewportWidth } url navKey =
+init { user, viewportWidth, now } url navKey =
     let
         userResult =
             Decode.decodeValue User.decode user
@@ -339,6 +350,7 @@ init { user, viewportWidth } url navKey =
                 , state = ViewingLoading
                 , layout = Layout.getLayout viewportWidth
                 , user = maybeUser
+                , now = Time.millisToPosix now
                 }
     in
     ( model, Cmd.batch [ cmd, logCmd ] )

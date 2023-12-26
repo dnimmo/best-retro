@@ -1,5 +1,8 @@
 module DiscussionItem exposing
     ( DiscussionItem
+    , createContinueItem
+    , createStartItem
+    , createStopItem
     , devDiscussionItems
     , getAllContinueItems
     , getAllStartItems
@@ -8,6 +11,7 @@ module DiscussionItem exposing
     )
 
 import Time
+import UniqueID exposing (UniqueID)
 
 
 type ItemType
@@ -18,7 +22,7 @@ type ItemType
 
 type DiscussionItem
     = DiscussionItem
-        { id : String
+        { id : UniqueID
         , author : String
         , date : Time.Posix
         , content : String
@@ -46,38 +50,75 @@ getAllContinueItems items =
     List.filter (\(DiscussionItem { type_ }) -> type_ == Continue) items
 
 
+type alias CreateItemParams =
+    { authorID : String
+    , content : String
+    , timestamp : Time.Posix
+    }
+
+
+createItem : ItemType -> CreateItemParams -> DiscussionItem
+createItem type_ { authorID, content, timestamp } =
+    DiscussionItem
+        { id = UniqueID.generateID timestamp
+        , author = authorID
+        , date = Time.millisToPosix 0
+        , content = content
+        , type_ = type_
+        }
+
+
+createStartItem : CreateItemParams -> DiscussionItem
+createStartItem =
+    createItem Start
+
+
+createStopItem : CreateItemParams -> DiscussionItem
+createStopItem =
+    createItem Stop
+
+
+createContinueItem : CreateItemParams -> DiscussionItem
+createContinueItem =
+    createItem Continue
+
+
+
+-- FOR DEVELOPMENT ONLY
+
+
 devDiscussionItems : List DiscussionItem
 devDiscussionItems =
     [ DiscussionItem
-        { id = "1"
+        { id = UniqueID.generateID (Time.millisToPosix 0)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should start using Elm"
         , type_ = Start
         }
     , DiscussionItem
-        { id = "2"
+        { id = UniqueID.generateID (Time.millisToPosix 10)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should high-five each other"
         , type_ = Start
         }
     , DiscussionItem
-        { id = "3"
+        { id = UniqueID.generateID (Time.millisToPosix 20)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should stop using TypeScript"
         , type_ = Stop
         }
     , DiscussionItem
-        { id = "4"
+        { id = UniqueID.generateID (Time.millisToPosix 30)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should stop not high-fiving each other"
         , type_ = Stop
         }
     , DiscussionItem
-        { id = "5"
+        { id = UniqueID.generateID (Time.millisToPosix 40)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should continue being awesome"

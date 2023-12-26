@@ -73,8 +73,8 @@ type Msg
     | SubmitField Field
 
 
-update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update on msg ((Model boardId startTime state) as model) =
+update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
+update now on msg ((Model boardId startTime state) as model) =
     case state of
         ReadyToStart ->
             case msg of
@@ -168,8 +168,30 @@ update on msg ((Model boardId startTime state) as model) =
                                         | continue = ""
                                     }
                             )
-                            discussionItems
-                      -- TODO add new item to list
+                            ((case field of
+                                Start ->
+                                    DiscussionItem.createStartItem
+                                        { authorID = "TODO - User ID here"
+                                        , content = inputs.start
+                                        , timestamp = now
+                                        }
+
+                                Stop ->
+                                    DiscussionItem.createStopItem
+                                        { authorID = "TODO - User ID here"
+                                        , content = inputs.stop
+                                        , timestamp = now
+                                        }
+
+                                Continue ->
+                                    DiscussionItem.createContinueItem
+                                        { authorID = "TODO - User ID here"
+                                        , content = inputs.continue
+                                        , timestamp = now
+                                        }
+                             )
+                                :: discussionItems
+                            )
                     , Cmd.none
                       -- TODO send new item to server
                     )
@@ -305,7 +327,7 @@ view layout on (Model boardId startTime state) =
         ]
 
 
-init : String -> Model
-init boardId =
+init : String -> Time.Posix -> Model
+init boardId now =
     -- TODO: Add Loading state and fetch board here
-    Model boardId (Time.millisToPosix 0) <| ReadyToStart
+    Model boardId now ReadyToStart
