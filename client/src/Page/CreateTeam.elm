@@ -103,7 +103,7 @@ view on model =
                         , onChange = on << UpdateTeamName
                         , placeholder = Nothing
                         }
-                    , Input.actionButton
+                    , Input.primaryActionButton
                         { labelString = "Create team"
                         , onPress = on SubmitNewTeam
                         }

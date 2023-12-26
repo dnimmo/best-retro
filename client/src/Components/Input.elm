@@ -1,15 +1,16 @@
 module Components.Input exposing
-    ( actionButton
-    , currentPasswordDisplayed
+    ( currentPasswordDisplayed
     , currentPasswordHidden
     , form
     , inputFieldWithInsetButton
     , leftIconButton
     , plainText
+    , primaryActionButton
     , rightIconButton
+    , secondaryActionButton
     )
 
-import Components exposing (corners, edges)
+import Components exposing (ButtonType(..), corners, edges)
 import Components.Colours as Colours
 import Components.Icons as Icons
 import Components.Layout as Layout
@@ -129,12 +130,49 @@ currentPasswordDisplayed =
     textInput <| CurrentPassword { show = True }
 
 
-actionButton : { onPress : msg, labelString : String } -> Element msg
-actionButton { onPress, labelString } =
-    Input.button []
+type ButtonType
+    = Primary
+    | Secondary
+
+
+actionButton : ButtonType -> { onPress : msg, labelString : String } -> Element msg
+actionButton buttonType { onPress, labelString } =
+    let
+        colours =
+            case buttonType of
+                Primary ->
+                    [ Background.color Colours.mediumBlue
+                    , Font.color Colours.white
+                    , Border.color Colours.darkBlue
+                    ]
+
+                Secondary ->
+                    [ Background.color Colours.white
+                    , Font.color Colours.mediumBlue
+                    , Border.color Colours.mediumBlue
+                    ]
+    in
+    Input.button
+        (colours
+            ++ [ Border.rounded 5
+               , paddingXY 20 10
+               , Font.size 18
+               , Border.width 1
+               ]
+        )
         { onPress = Just onPress
         , label = text labelString
         }
+
+
+primaryActionButton : { onPress : msg, labelString : String } -> Element msg
+primaryActionButton =
+    actionButton Primary
+
+
+secondaryActionButton : { onPress : msg, labelString : String } -> Element msg
+secondaryActionButton =
+    actionButton Secondary
 
 
 type IconPosition

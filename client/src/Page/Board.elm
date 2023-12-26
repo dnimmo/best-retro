@@ -15,6 +15,7 @@ import Page.Board.AddingItems as AddingItems
 import Page.Board.DiscussingPreviousActions as PreviousActions
 import Page.Board.Intro as Intro
 import Route
+import Time
 
 
 
@@ -26,60 +27,172 @@ type alias BoardID =
 
 
 type Model
-    = Model BoardID State
+    = Model BoardID Time.Posix State
 
 
 type State
     = ReadyToStart
     | DiscussingPreviousActions (List ActionItem)
-    | AddingDiscussionItems (List DiscussionItem)
+    | AddingDiscussionItems AddingItemsInputs (List DiscussionItem)
+
+
+type alias AddingItemsInputs =
+    { start : String
+    , stop : String
+    , continue : String
+    }
 
 
 
 -- UPDATE
 
 
+defaultAddingItemsInputs : AddingItemsInputs
+defaultAddingItemsInputs =
+    { start = ""
+    , stop = ""
+    , continue = ""
+    }
+
+
+type Field
+    = Start
+    | Stop
+    | Continue
+
+
 type Msg
-    = UpdateField String
-    | StartAddingItems
+    = StartAddingItems
     | PopulateDummyItems
     | ViewPreviousActions
     | BackToStart
+    | MarkActionAsStarted ActionItem
+    | MarkActionAsNotStarted ActionItem
     | MarkActionAsComplete ActionItem
+    | UpdateField Field String
+    | SubmitField Field
 
 
 update : (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update on msg ((Model boardId state) as model) =
-    case msg of
-        UpdateField str ->
-            ( model
-            , Cmd.none
-            )
+update on msg ((Model boardId startTime state) as model) =
+    case state of
+        ReadyToStart ->
+            case msg of
+                ViewPreviousActions ->
+                    ( Model boardId startTime <|
+                        DiscussingPreviousActions <|
+                            ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                    , Cmd.none
+                    )
 
-        StartAddingItems ->
-            ( Model boardId <| AddingDiscussionItems []
-            , Cmd.none
-            )
+                _ ->
+                    ( model, Cmd.none )
 
-        PopulateDummyItems ->
-            ( Model boardId <| AddingDiscussionItems DiscussionItem.devDiscussionItems
-            , Cmd.none
-            )
+        DiscussingPreviousActions actionItems ->
+            case msg of
+                BackToStart ->
+                    ( Model boardId startTime ReadyToStart
+                    , Cmd.none
+                    )
 
-        ViewPreviousActions ->
-            ( Model boardId <| DiscussingPreviousActions ActionItem.devActionItems
-            , Cmd.none
-            )
+                MarkActionAsNotStarted actionItem ->
+                    ( Model boardId startTime <|
+                        DiscussingPreviousActions <|
+                            ActionItem.setToDo (ActionItem.getId actionItem) actionItems
+                    , Cmd.none
+                    )
 
-        BackToStart ->
-            ( Model boardId ReadyToStart
-            , Cmd.none
-            )
+                MarkActionAsStarted actionItem ->
+                    ( Model boardId startTime <|
+                        DiscussingPreviousActions <|
+                            ActionItem.setInProgress (ActionItem.getId actionItem) actionItems
+                    , Cmd.none
+                    )
 
-        MarkActionAsComplete actionItem ->
-            ( model
-            , Cmd.none
-            )
+                MarkActionAsComplete actionItem ->
+                    ( Model boardId startTime <|
+                        DiscussingPreviousActions <|
+                            ActionItem.setComplete (ActionItem.getId actionItem) actionItems
+                    , Cmd.none
+                    )
+
+                StartAddingItems ->
+                    ( Model boardId startTime <| AddingDiscussionItems defaultAddingItemsInputs []
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        AddingDiscussionItems inputs discussionItems ->
+            case msg of
+                UpdateField field str ->
+                    ( Model boardId startTime <|
+                        AddingDiscussionItems
+                            (case field of
+                                Start ->
+                                    { inputs
+                                        | start = str
+                                    }
+
+                                Stop ->
+                                    { inputs
+                                        | stop = str
+                                    }
+
+                                Continue ->
+                                    { inputs
+                                        | continue = str
+                                    }
+                            )
+                            discussionItems
+                    , Cmd.none
+                    )
+
+                SubmitField field ->
+                    ( Model boardId startTime <|
+                        AddingDiscussionItems
+                            (case field of
+                                Start ->
+                                    { inputs
+                                        | start = ""
+                                    }
+
+                                Stop ->
+                                    { inputs
+                                        | stop = ""
+                                    }
+
+                                Continue ->
+                                    { inputs
+                                        | continue = ""
+                                    }
+                            )
+                            discussionItems
+                      -- TODO add new item to list
+                    , Cmd.none
+                      -- TODO send new item to server
+                    )
+
+                PopulateDummyItems ->
+                    ( Model boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems
+                    , Cmd.none
+                    )
+
+                ViewPreviousActions ->
+                    ( Model boardId startTime <|
+                        DiscussingPreviousActions <|
+                            ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                    , Cmd.none
+                    )
+
+                BackToStart ->
+                    ( Model boardId startTime ReadyToStart
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -123,7 +236,7 @@ boardControls state on =
                         }
                     ]
 
-                AddingDiscussionItems items ->
+                AddingDiscussionItems _ items ->
                     [ Input.leftIconButton
                         { onPress = on ViewPreviousActions
                         , icon = Icons.back
@@ -144,7 +257,7 @@ boardControls state on =
 
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
-view layout on (Model boardId state) =
+view layout on (Model boardId startTime state) =
     column
         [ width fill
         , height fill
@@ -161,12 +274,31 @@ view layout on (Model boardId state) =
                 Intro.view
 
             DiscussingPreviousActions previousActions ->
-                PreviousActions.view layout { markActionAsComplete = on << MarkActionAsComplete } previousActions
+                PreviousActions.view layout
+                    { markActionAsNotStarted = on << MarkActionAsNotStarted
+                    , markActionAsInProgress = on << MarkActionAsStarted
+                    , markActionAsComplete = on << MarkActionAsComplete
+                    }
+                    previousActions
 
-            AddingDiscussionItems discussionItems ->
+            AddingDiscussionItems inputs discussionItems ->
                 AddingItems.view layout
-                    { updateField =
-                        on << UpdateField
+                    { msgs =
+                        { updateStartField =
+                            on << UpdateField Start
+                        , updateStopField =
+                            on << UpdateField Stop
+                        , updateContinueField =
+                            on << UpdateField Continue
+                        , submitStartItem = on <| SubmitField Start
+                        , submitStopItem = on <| SubmitField Stop
+                        , submitContinueItem = on <| SubmitField Continue
+                        }
+                    , values =
+                        { startField = inputs.start
+                        , stopField = inputs.stop
+                        , continueField = inputs.continue
+                        }
                     }
                     discussionItems
         , Components.link Route.Dashboard [] "Back to dashboard"
@@ -176,4 +308,4 @@ view layout on (Model boardId state) =
 init : String -> Model
 init boardId =
     -- TODO: Add Loading state and fetch board here
-    Model boardId <| ReadyToStart
+    Model boardId (Time.millisToPosix 0) <| ReadyToStart

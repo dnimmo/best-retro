@@ -124,3 +124,27 @@ user : Element msg
 user =
     html <|
         Icons.person smallIconSize defaultIconColour
+
+
+inProgress : Element msg
+inProgress =
+    html <|
+        Icons.hourglass_top smallIconSize defaultIconColour
+
+
+completed : Element msg
+completed =
+    html <|
+        Icons.check_circle smallIconSize defaultIconColour
+
+
+toDo : Element msg
+toDo =
+    html <|
+        Icons.not_started smallIconSize defaultIconColour
+
+
+actionCompleted : Element msg
+actionCompleted =
+    html <|
+        Icons.task_alt smallIconSize defaultIconColour

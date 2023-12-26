@@ -7,11 +7,14 @@ import Element exposing (..)
 
 
 type alias RequiredMessages msg =
-    { markActionAsComplete : ActionItem -> msg }
+    { markActionAsNotStarted : ActionItem -> msg
+    , markActionAsInProgress : ActionItem -> msg
+    , markActionAsComplete : ActionItem -> msg
+    }
 
 
 view : Layout -> RequiredMessages msg -> List ActionItem -> Element msg
-view layout { markActionAsComplete } actions =
+view layout { markActionAsComplete, markActionAsNotStarted, markActionAsInProgress } actions =
     column
         [ width fill
         , height fill
@@ -31,7 +34,11 @@ view layout { markActionAsComplete } actions =
             (actions
                 |> List.map
                     (\item ->
-                        Card.action item (markActionAsComplete item)
+                        Card.action item
+                            { setComplete = markActionAsComplete item
+                            , setInProgress = markActionAsInProgress item
+                            , setNotStarted = markActionAsNotStarted item
+                            }
                     )
             )
         ]

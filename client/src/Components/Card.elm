@@ -6,9 +6,10 @@ import Components.Animation as Animation
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
+import Components.Input as Input
 import Components.Layout as Layout
 import Element exposing (..)
-import Element.Background as Backround
+import Element.Background as Background
 import Element.Border as Border
 import Route exposing (..)
 
@@ -19,16 +20,25 @@ type Card msg
 
 type CardVariant msg
     = Display
-    | Action ActionItem msg
+    | Action ActionItem (ActionMsgs msg)
     | Link Route
 
 
-styles : List (Element.Attribute msg)
-styles =
+type alias ActionMsgs msg =
+    { setComplete : msg
+    , setInProgress : msg
+    , setNotStarted : msg
+    }
+
+
+styles : { highlight : Bool } -> List (Element.Attribute msg)
+styles { highlight } =
     [ Border.rounded 5
-    , Backround.color Colours.white
-    , paddingXY 15 25
-    , Layout.commonColumnSpacing
+    , if highlight then
+        Background.color Colours.mediumBlueTransparent
+
+      else
+        Background.color Colours.white
     , width (fill |> minimum 360)
     , height fill
     , Border.shadow
@@ -46,52 +56,123 @@ card (Card str variant) =
     let
         element =
             column
-                styles
+                (styles
+                    { highlight =
+                        case variant of
+                            Display ->
+                                False
+
+                            Action item _ ->
+                                ActionItem.isComplete item
+
+                            Link _ ->
+                                False
+                    }
+                )
             <|
                 case variant of
                     Display ->
-                        [ text str
+                        [ el
+                            [ paddingXY 15 25
+                            ]
+                          <|
+                            text str
                         ]
 
-                    Action item msg ->
+                    Action item msgs ->
+                        let
+                            toDoButton =
+                                Input.secondaryActionButton
+                                    { onPress = msgs.setNotStarted
+                                    , labelString = "Not started"
+                                    }
+
+                            inProgressButton =
+                                Input.primaryActionButton
+                                    { onPress = msgs.setInProgress
+                                    , labelString = "Started"
+                                    }
+
+                            completedButton =
+                                Input.primaryActionButton
+                                    { onPress = msgs.setComplete
+                                    , labelString = "Complete"
+                                    }
+                        in
                         [ row
                             [ width fill
                             , height fill
                             ]
                             [ paragraph
                                 [ width fill
-                                , height fill
+                                , paddingXY 15 25
                                 ]
                                 [ el [ width fill ] <| text str
                                 ]
-                            , column
+                            , el
                                 [ alignRight
+                                , width (fill |> minimum 180)
+                                , paddingXY 0 10
                                 , height fill
-                                , width (fill |> minimum 150)
                                 , alignTop
-                                , Layout.commonColumnSpacing
                                 , Border.widthEach
                                     { edges
-                                        | left = 1
+                                        | left = 2
                                     }
-                                , paddingXY 10 0
-                                , Border.color Colours.mediumBlue
+                                , Border.color Colours.mediumBlueTransparent
                                 ]
-                                [ row [ Layout.lessRowSpacing ]
-                                    [ el [] Icons.user
-                                    , el [] <|
-                                        text <|
-                                            ActionItem.getAssignee item
+                              <|
+                                column
+                                    [ Layout.commonColumnSpacing
+                                    , centerX
+                                    , centerY
                                     ]
-                                , row [ Layout.lessRowSpacing ]
-                                    [ el [] Icons.status
-                                    , el [] <|
-                                        text <|
-                                            ActionItem.statusToString <|
-                                                ActionItem.getStatus item
+                                    [ row
+                                        [ Layout.lessRowSpacing
+                                        ]
+                                        [ el [] Icons.user
+                                        , el [] <|
+                                            text <|
+                                                ActionItem.getAssignee item
+                                        ]
+                                    , row [ Layout.lessRowSpacing ]
+                                        [ el [] <| ActionItem.getIcon item
+                                        , el [] <|
+                                            text <|
+                                                ActionItem.statusToString <|
+                                                    ActionItem.getStatus item
+                                        ]
                                     ]
-                                ]
                             ]
+                        , el
+                            [ Border.widthEach { edges | top = 2 }
+                            , width fill
+                            , Border.color Colours.mediumBlueTransparent
+                            , paddingXY 0 20
+                            ]
+                          <|
+                            el
+                                [ alignRight
+                                , paddingXY 20 0
+                                ]
+                                (if ActionItem.isComplete item then
+                                    row [ Layout.commonRowSpacing ]
+                                        [ toDoButton
+                                        , inProgressButton
+                                        ]
+
+                                 else if ActionItem.isInProgress item then
+                                    row [ Layout.commonRowSpacing ]
+                                        [ toDoButton
+                                        , completedButton
+                                        ]
+
+                                 else
+                                    row [ Layout.commonRowSpacing ]
+                                        [ inProgressButton
+                                        , completedButton
+                                        ]
+                                )
                         ]
 
                     Link _ ->
@@ -113,9 +194,7 @@ card (Card str variant) =
                 }
 
         _ ->
-            el
-                [ width fill ]
-                element
+            element
 
 
 link : String -> Route -> Element msg
@@ -123,11 +202,11 @@ link str route =
     card <| Card str <| Link route
 
 
-action : ActionItem -> msg -> Element msg
-action item msg =
+action : ActionItem -> ActionMsgs msg -> Element msg
+action item msgs =
     card <|
         Card (ActionItem.getContent item) <|
-            Action item msg
+            Action item msgs
 
 
 display : String -> Element msg

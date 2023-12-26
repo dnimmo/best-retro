@@ -51,7 +51,7 @@ emptyDiscussionItemView =
 
 discussionItemCard : Category -> DiscussionItem -> Element msg
 discussionItemCard category discussionItem =
-    column Card.styles
+    column (paddingXY 15 25 :: Card.styles { highlight = False })
         [ row [ width fill ]
             [ paragraph []
                 [ text <|
@@ -78,13 +78,25 @@ discussionItemColumn =
         ]
 
 
-type alias RequiredMessages msg =
-    { updateField : String -> msg
+type alias Params msg =
+    { msgs :
+        { updateStartField : String -> msg
+        , updateStopField : String -> msg
+        , updateContinueField : String -> msg
+        , submitStartItem : msg
+        , submitStopItem : msg
+        , submitContinueItem : msg
+        }
+    , values :
+        { startField : String
+        , stopField : String
+        , continueField : String
+        }
     }
 
 
-view : Layout -> RequiredMessages msg -> List DiscussionItem -> Element msg
-view layout msgs discussionItems =
+view : Layout -> Params msg -> List DiscussionItem -> Element msg
+view layout { msgs, values } discussionItems =
     column
         [ width fill
         , height fill
@@ -98,10 +110,10 @@ view layout msgs discussionItems =
                 discussionColumnStyles
                 [ Label.start
                 , Input.inputFieldWithInsetButton
-                    { onChange = msgs.updateField
-                    , value = ""
+                    { onChange = msgs.updateStartField
+                    , value = values.startField
                     , labelString = "What should we start doing?"
-                    , onSubmit = msgs.updateField "TODO: Submit"
+                    , onSubmit = msgs.submitStartItem
                     }
                 , discussionItemColumn <|
                     List.map (discussionItemCard Start) <|
@@ -111,10 +123,10 @@ view layout msgs discussionItems =
                 discussionColumnStyles
                 [ Label.stop
                 , Input.inputFieldWithInsetButton
-                    { onChange = msgs.updateField
-                    , value = ""
+                    { onChange = msgs.updateStopField
+                    , value = values.stopField
                     , labelString = "What should we stop doing?"
-                    , onSubmit = msgs.updateField "TODO: Submit"
+                    , onSubmit = msgs.submitStopItem
                     }
                 , discussionItemColumn <|
                     List.map (discussionItemCard Stop) <|
@@ -124,10 +136,10 @@ view layout msgs discussionItems =
                 discussionColumnStyles
                 [ Label.continue
                 , Input.inputFieldWithInsetButton
-                    { onChange = msgs.updateField
-                    , value = ""
+                    { onChange = msgs.updateContinueField
+                    , value = values.continueField
                     , labelString = "What should we keep doing?"
-                    , onSubmit = msgs.updateField "TODO: Submit"
+                    , onSubmit = msgs.submitContinueItem
                     }
                 , discussionItemColumn <|
                     List.map (discussionItemCard Continue) <|
