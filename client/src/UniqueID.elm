@@ -1,4 +1,13 @@
-module UniqueID exposing (UniqueID, decode, encode, generateDefaultID, generateID, getID, toString)
+module UniqueID exposing
+    ( UniqueID
+    , decode
+    , encode
+    , generateDefaultID
+    , generateID
+    , getID
+    , toComparable
+    , toString
+    )
 
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -14,6 +23,11 @@ type UniqueID
 getID : UniqueID -> UUID
 getID (UniqueID id) =
     id
+
+
+toComparable : UniqueID -> String
+toComparable (UniqueID id) =
+    UUID.toString id
 
 
 generateID : Time.Posix -> UniqueID

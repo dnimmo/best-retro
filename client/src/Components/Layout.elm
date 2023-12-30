@@ -137,7 +137,6 @@ header route =
     row
         (Font.siteHeading
             ++ [ width fill
-               , commonPadding
                , Colours.gradientBlue
                , Font.color Colours.white
                , Border.widthEach
@@ -148,11 +147,17 @@ header route =
                     }
                , Border.color Colours.grey
                , spacing 10
-               , height <| px 100
                ]
         )
     <|
-        [ el [ centerX ] <| text "Best Retro"
+        [ image
+            [ width (fill |> maximum 360)
+            , height <| px 80
+            , moveLeft 50
+            ]
+            { src = "/img/logo.svg"
+            , description = ""
+            }
         ]
 
 

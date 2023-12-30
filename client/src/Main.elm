@@ -113,7 +113,7 @@ urlChange url model =
 
                         Just (Route.Board boardId) ->
                             ViewingBoard user <|
-                                Board.init boardId model.now
+                                Board.init user boardId model.now
 
                         _ ->
                             -- TODO: Maybe show some error in this situation

@@ -84,6 +84,12 @@ add =
         Icons.add iconSize IconTypes.Inherit
 
 
+clear : Element msg
+clear =
+    html <|
+        Icons.clear iconSize IconTypes.Inherit
+
+
 controls : Element msg
 controls =
     html <|
@@ -148,3 +154,81 @@ actionCompleted : Element msg
 actionCompleted =
     html <|
         Icons.task_alt smallIconSize defaultIconColour
+
+
+remove : Element msg
+remove =
+    html <|
+        Icons.delete_forever smallIconSize IconTypes.Inherit
+
+
+edit : Element msg
+edit =
+    html <|
+        Icons.edit smallIconSize IconTypes.Inherit
+
+
+check : Element msg
+check =
+    html <|
+        Icons.check smallIconSize IconTypes.Inherit
+
+
+combine2 : Element msg
+combine2 =
+    html <|
+        Icons.filter_2 smallIconSize IconTypes.Inherit
+
+
+combine3 : Element msg
+combine3 =
+    html <|
+        Icons.filter_3 smallIconSize IconTypes.Inherit
+
+
+combine4 : Element msg
+combine4 =
+    html <|
+        Icons.filter_4 smallIconSize IconTypes.Inherit
+
+
+combine5 : Element msg
+combine5 =
+    html <|
+        Icons.filter_5 smallIconSize IconTypes.Inherit
+
+
+combine6 : Element msg
+combine6 =
+    html <|
+        Icons.filter_6 smallIconSize IconTypes.Inherit
+
+
+combine7 : Element msg
+combine7 =
+    html <|
+        Icons.filter_7 smallIconSize IconTypes.Inherit
+
+
+combine8 : Element msg
+combine8 =
+    html <|
+        Icons.filter_8 smallIconSize IconTypes.Inherit
+
+
+combine9plus : Element msg
+combine9plus =
+    html <|
+        Icons.filter_9_plus smallIconSize IconTypes.Inherit
+
+
+upvote : Element msg
+upvote =
+    html <|
+        Icons.thumb_up smallIconSize IconTypes.Inherit
+
+
+downvote : Element msg
+downvote =
+    html <|
+        Icons.thumb_down smallIconSize IconTypes.Inherit

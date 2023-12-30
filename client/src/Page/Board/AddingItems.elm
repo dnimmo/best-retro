@@ -1,17 +1,11 @@
 module Page.Board.AddingItems exposing (view)
 
-import Components.Card as Card
 import Components.Input as Input
 import Components.Label as Label
 import Components.Layout as Layout exposing (Layout)
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
-
-
-type Category
-    = Start
-    | Stop
-    | Continue
+import Page.Board.Shared as Shared
 
 
 emptyDiscussionItemView : Element msg
@@ -49,35 +43,6 @@ emptyDiscussionItemView =
             ]
 
 
-discussionItemCard : Category -> DiscussionItem -> Element msg
-discussionItemCard category discussionItem =
-    column (paddingXY 15 25 :: Card.styles { highlight = False })
-        [ row [ width fill ]
-            [ paragraph []
-                [ text <|
-                    DiscussionItem.getContent discussionItem
-                ]
-            ]
-        ]
-
-
-discussionColumnStyles : List (Attribute msg)
-discussionColumnStyles =
-    [ width fill
-    , Layout.commonColumnSpacing
-    , alignTop
-    ]
-
-
-discussionItemColumn : List (Element msg) -> Element msg
-discussionItemColumn =
-    column
-        [ Layout.commonColumnSpacing
-        , paddingXY 0 20
-        , width fill
-        ]
-
-
 type alias Params msg =
     { msgs :
         { updateStartField : String -> msg
@@ -86,6 +51,7 @@ type alias Params msg =
         , submitStartItem : msg
         , submitStopItem : msg
         , submitContinueItem : msg
+        , removeItem : DiscussionItem -> msg
         }
     , values :
         { startField : String
@@ -107,7 +73,7 @@ view layout { msgs, values } discussionItems =
             , width fill
             ]
             [ column
-                discussionColumnStyles
+                Shared.discussionColumnStyles
                 [ Label.start
                 , Input.inputFieldWithInsetButton
                     { onChange = msgs.updateStartField
@@ -115,12 +81,12 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we start doing?"
                     , onSubmit = msgs.submitStartItem
                     }
-                , discussionItemColumn <|
-                    List.map (discussionItemCard Start) <|
+                , Shared.discussionItemColumn <|
+                    List.map (Shared.discussionItemCard Shared.Start msgs.removeItem) <|
                         DiscussionItem.getAllStartItems discussionItems
                 ]
             , column
-                discussionColumnStyles
+                Shared.discussionColumnStyles
                 [ Label.stop
                 , Input.inputFieldWithInsetButton
                     { onChange = msgs.updateStopField
@@ -128,12 +94,12 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we stop doing?"
                     , onSubmit = msgs.submitStopItem
                     }
-                , discussionItemColumn <|
-                    List.map (discussionItemCard Stop) <|
+                , Shared.discussionItemColumn <|
+                    List.map (Shared.discussionItemCard Shared.Stop msgs.removeItem) <|
                         DiscussionItem.getAllStopItems discussionItems
                 ]
             , column
-                discussionColumnStyles
+                Shared.discussionColumnStyles
                 [ Label.continue
                 , Input.inputFieldWithInsetButton
                     { onChange = msgs.updateContinueField
@@ -141,8 +107,10 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we keep doing?"
                     , onSubmit = msgs.submitContinueItem
                     }
-                , discussionItemColumn <|
-                    List.map (discussionItemCard Continue) <|
+                , Shared.discussionItemColumn <|
+                    List.map
+                        (Shared.discussionItemCard Shared.Continue msgs.removeItem)
+                    <|
                         DiscussionItem.getAllContinueItems discussionItems
                 ]
             ]

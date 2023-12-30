@@ -1,16 +1,23 @@
 module Components.Input exposing
-    ( currentPasswordDisplayed
+    ( addButton
+    , checkbox
+    , combineButton
+    , currentPasswordDisplayed
     , currentPasswordHidden
+    , downvoteButton
+    , editButton
     , form
     , inputFieldWithInsetButton
     , leftIconButton
     , plainText
     , primaryActionButton
+    , removeButton
     , rightIconButton
     , secondaryActionButton
+    , upvoteButton
     )
 
-import Components exposing (ButtonType(..), corners, edges)
+import Components exposing (ControlType(..), corners, edges)
 import Components.Colours as Colours
 import Components.Icons as Icons
 import Components.Layout as Layout
@@ -264,32 +271,177 @@ inputFieldWithInsetButton { onChange, value, labelString, onSubmit } =
                 , label = Input.labelHidden labelString
                 , placeholder = Nothing
                 }
-            , Input.button
-                [ Background.color Colours.white
-                , height fill
-                , paddingXY 10 0
-                , Border.color Colours.grey
-                , Border.widthEach
-                    { edges
-                        | top = 1
-                        , bottom = 1
-                        , right = 1
-                    }
-                , Border.roundEach
-                    { corners
-                        | topRight = 5
-                        , bottomRight = 5
-                    }
-                ]
-                { onPress = Just onSubmit
-                , label =
-                    el
-                        [ Border.rounded 5
-                        , Border.color Colours.grey
-                        , Font.color Colours.white
-                        , Background.color Colours.mediumBlue
-                        ]
-                        Icons.add
-                }
+            , addButton onSubmit
             ]
         ]
+
+
+type ControlType
+    = Add
+    | Remove
+    | Edit
+    | GoBack
+    | Combine Int
+    | Upvote
+    | Downvote
+
+
+controlButtonStyles : ControlType -> List (Element.Attribute msg)
+controlButtonStyles controlType =
+    [ Background.color Colours.white
+    , Font.color Colours.mediumBlue
+    , height fill
+    , paddingXY 10 <|
+        case controlType of
+            Add ->
+                0
+
+            _ ->
+                10
+    , Border.color Colours.grey
+    , Border.widthEach
+        { edges
+            | top =
+                case controlType of
+                    Add ->
+                        1
+
+                    _ ->
+                        0
+            , bottom =
+                case controlType of
+                    Add ->
+                        1
+
+                    _ ->
+                        0
+            , right =
+                case controlType of
+                    Add ->
+                        1
+
+                    _ ->
+                        0
+        }
+    , Border.roundEach
+        { topRight = 5
+        , bottomRight = 5
+        , bottomLeft =
+            case controlType of
+                Add ->
+                    0
+
+                _ ->
+                    5
+        , topLeft =
+            case controlType of
+                Add ->
+                    0
+
+                _ ->
+                    5
+        }
+    ]
+
+
+controlButton : ControlType -> msg -> Element msg
+controlButton controlType msg =
+    Input.button
+        (controlButtonStyles controlType)
+        { label =
+            el [ centerY ] <|
+                case controlType of
+                    Add ->
+                        Icons.add
+
+                    GoBack ->
+                        Icons.clear
+
+                    Remove ->
+                        Icons.remove
+
+                    Edit ->
+                        Icons.edit
+
+                    Combine int ->
+                        case int of
+                            2 ->
+                                Icons.combine2
+
+                            3 ->
+                                Icons.combine3
+
+                            4 ->
+                                Icons.combine4
+
+                            5 ->
+                                Icons.combine5
+
+                            6 ->
+                                Icons.combine6
+
+                            7 ->
+                                Icons.combine7
+
+                            8 ->
+                                Icons.combine8
+
+                            _ ->
+                                Icons.combine9plus
+
+                    Upvote ->
+                        Icons.upvote
+
+                    Downvote ->
+                        Icons.downvote
+        , onPress = Just msg
+        }
+
+
+addButton : msg -> Element msg
+addButton =
+    controlButton Add
+
+
+removeButton : msg -> Element msg
+removeButton =
+    controlButton Remove
+
+
+editButton : msg -> Element msg
+editButton =
+    controlButton Edit
+
+
+checkbox : Bool -> (Bool -> msg) -> Element msg
+checkbox isChecked toggleMsg =
+    Input.checkbox
+        [ Background.color <|
+            if isChecked then
+                Colours.mediumBlue
+
+            else
+                Colours.mediumBlueTransparent
+        , Border.rounded 5
+        , padding 10
+        ]
+        { checked = isChecked
+        , onChange = toggleMsg
+        , icon = Input.defaultCheckbox
+        , label = Input.labelHidden "combine"
+        }
+
+
+combineButton : Int -> msg -> Element msg
+combineButton numberToCombine combineMsg =
+    controlButton (Combine numberToCombine) combineMsg
+
+
+upvoteButton : msg -> Element msg
+upvoteButton msg =
+    controlButton Upvote msg
+
+
+downvoteButton : msg -> Element msg
+downvoteButton msg =
+    controlButton Downvote msg

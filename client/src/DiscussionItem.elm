@@ -8,6 +8,10 @@ module DiscussionItem exposing
     , getAllStartItems
     , getAllStopItems
     , getContent
+    , getId
+    , isContinue
+    , isStart
+    , isStop
     )
 
 import Time
@@ -30,24 +34,44 @@ type DiscussionItem
         }
 
 
+getId : DiscussionItem -> UniqueID
+getId (DiscussionItem { id }) =
+    id
+
+
 getContent : DiscussionItem -> String
 getContent (DiscussionItem { content }) =
     content
 
 
+isStart : DiscussionItem -> Bool
+isStart (DiscussionItem { type_ }) =
+    type_ == Start
+
+
+isStop : DiscussionItem -> Bool
+isStop (DiscussionItem { type_ }) =
+    type_ == Stop
+
+
+isContinue : DiscussionItem -> Bool
+isContinue (DiscussionItem { type_ }) =
+    type_ == Continue
+
+
 getAllStartItems : List DiscussionItem -> List DiscussionItem
 getAllStartItems items =
-    List.filter (\(DiscussionItem { type_ }) -> type_ == Start) items
+    List.filter isStart items
 
 
 getAllStopItems : List DiscussionItem -> List DiscussionItem
 getAllStopItems items =
-    List.filter (\(DiscussionItem { type_ }) -> type_ == Stop) items
+    List.filter isStop items
 
 
 getAllContinueItems : List DiscussionItem -> List DiscussionItem
 getAllContinueItems items =
-    List.filter (\(DiscussionItem { type_ }) -> type_ == Continue) items
+    List.filter isContinue items
 
 
 type alias CreateItemParams =

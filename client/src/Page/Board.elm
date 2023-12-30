@@ -13,9 +13,15 @@ import Element.Background as Background
 import Element.Border as Border
 import Page.Board.AddingItems as AddingItems
 import Page.Board.DiscussingPreviousActions as PreviousActions
+import Page.Board.GroupingItems as GroupingItems
 import Page.Board.Intro as Intro
+import Page.Board.Loading as Loading
+import Page.Board.Voting as Voting
 import Route
+import Set exposing (Set)
 import Time
+import UniqueID exposing (UniqueID)
+import User exposing (User)
 
 
 
@@ -27,13 +33,24 @@ type alias BoardID =
 
 
 type Model
-    = Model BoardID Time.Posix State
+    = Model User BoardID Time.Posix State
 
 
 type State
-    = ReadyToStart
+    = Loading
+    | ReadyToStart
     | DiscussingPreviousActions (List ActionItem)
     | AddingDiscussionItems AddingItemsInputs (List DiscussionItem)
+    | GroupingItems
+        { items : List DiscussionItem
+        , toGroup : Set String
+        }
+    | Voting
+        (List
+            { item : DiscussionItem
+            , votes : Set String
+            }
+        )
 
 
 type alias AddingItemsInputs =
@@ -62,7 +79,8 @@ type Field
 
 
 type Msg
-    = StartAddingItems
+    = SimulateLoading
+    | StartAddingItems
     | PopulateDummyItems
     | ViewPreviousActions
     | BackToStart
@@ -71,15 +89,36 @@ type Msg
     | MarkActionAsComplete ActionItem
     | UpdateField Field String
     | SubmitField Field
+    | RemoveDiscussionItem DiscussionItem
+    | StartGroupingItems
+    | AddToGroupingList UniqueID
+    | GroupItems
+    | StartVoting
+    | ToggleVote DiscussionItem
 
 
 update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update now on msg ((Model boardId startTime state) as model) =
+update now on msg ((Model user boardId startTime state) as model) =
+    let
+        userId =
+            User.getId user
+
+        comparableUserId =
+            UniqueID.toComparable userId
+    in
     case state of
+        Loading ->
+            case msg of
+                SimulateLoading ->
+                    ( Model user boardId startTime ReadyToStart, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
         ReadyToStart ->
             case msg of
                 ViewPreviousActions ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         DiscussingPreviousActions <|
                             ActionItem.notCompletedBefore startTime ActionItem.devActionItems
                     , Cmd.none
@@ -91,33 +130,33 @@ update now on msg ((Model boardId startTime state) as model) =
         DiscussingPreviousActions actionItems ->
             case msg of
                 BackToStart ->
-                    ( Model boardId startTime ReadyToStart
+                    ( Model user boardId startTime ReadyToStart
                     , Cmd.none
                     )
 
                 MarkActionAsNotStarted actionItem ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         DiscussingPreviousActions <|
                             ActionItem.setToDo (ActionItem.getId actionItem) actionItems
                     , Cmd.none
                     )
 
                 MarkActionAsStarted actionItem ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         DiscussingPreviousActions <|
                             ActionItem.setInProgress (ActionItem.getId actionItem) actionItems
                     , Cmd.none
                     )
 
                 MarkActionAsComplete actionItem ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         DiscussingPreviousActions <|
                             ActionItem.setComplete (ActionItem.getId actionItem) actionItems
                     , Cmd.none
                     )
 
                 StartAddingItems ->
-                    ( Model boardId startTime <| AddingDiscussionItems defaultAddingItemsInputs []
+                    ( Model user boardId startTime <| AddingDiscussionItems defaultAddingItemsInputs []
                     , Cmd.none
                     )
 
@@ -127,7 +166,7 @@ update now on msg ((Model boardId startTime state) as model) =
         AddingDiscussionItems inputs discussionItems ->
             case msg of
                 UpdateField field str ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         AddingDiscussionItems
                             (case field of
                                 Start ->
@@ -150,7 +189,7 @@ update now on msg ((Model boardId startTime state) as model) =
                     )
 
                 SubmitField field ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         AddingDiscussionItems
                             (case field of
                                 Start ->
@@ -196,20 +235,105 @@ update now on msg ((Model boardId startTime state) as model) =
                       -- TODO send new item to server
                     )
 
+                StartGroupingItems ->
+                    ( Model user boardId startTime <|
+                        GroupingItems
+                            { items = discussionItems
+                            , toGroup = Set.empty
+                            }
+                    , Cmd.none
+                    )
+
                 PopulateDummyItems ->
-                    ( Model boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems
+                    ( Model user boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems
                     , Cmd.none
                     )
 
                 ViewPreviousActions ->
-                    ( Model boardId startTime <|
+                    ( Model user boardId startTime <|
                         DiscussingPreviousActions <|
                             ActionItem.notCompletedBefore startTime ActionItem.devActionItems
                     , Cmd.none
                     )
 
                 BackToStart ->
-                    ( Model boardId startTime ReadyToStart
+                    ( Model user boardId startTime ReadyToStart
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GroupingItems { items, toGroup } ->
+            case msg of
+                AddToGroupingList id ->
+                    let
+                        comparableId =
+                            UniqueID.toComparable id
+                    in
+                    ( Model user boardId startTime <|
+                        GroupingItems
+                            { items = items
+                            , toGroup =
+                                if Set.member comparableId toGroup then
+                                    Set.remove comparableId toGroup
+
+                                else
+                                    Set.insert comparableId toGroup
+                            }
+                    , Cmd.none
+                    )
+
+                GroupItems ->
+                    ( Model user boardId startTime <|
+                        GroupingItems
+                            { items = items
+                            , toGroup = Set.empty
+                            }
+                    , Cmd.none
+                    )
+
+                StartVoting ->
+                    ( Model user boardId startTime <|
+                        Voting
+                            (List.map
+                                (\item ->
+                                    { item = item
+                                    , votes = Set.empty
+                                    }
+                                )
+                                items
+                            )
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Voting details ->
+            case msg of
+                ToggleVote item ->
+                    ( Model user boardId startTime <|
+                        Voting <|
+                            List.map
+                                (\detail ->
+                                    if detail.item == item then
+                                        { detail
+                                            | votes =
+                                                (if Set.member comparableUserId detail.votes then
+                                                    Set.remove
+
+                                                 else
+                                                    Set.insert
+                                                )
+                                                    comparableUserId
+                                                    detail.votes
+                                        }
+
+                                    else
+                                        detail
+                                )
+                                details
                     , Cmd.none
                     )
 
@@ -237,6 +361,14 @@ boardControls state on =
             , commonRowSpacing
             ]
             (case state of
+                Loading ->
+                    [ Input.rightIconButton
+                        { onPress = on SimulateLoading
+                        , icon = Icons.startSession
+                        , labelText = "Load"
+                        }
+                    ]
+
                 ReadyToStart ->
                     [ Input.rightIconButton
                         { onPress = on ViewPreviousActions
@@ -273,13 +405,39 @@ boardControls state on =
 
                       else
                         none
+                    , Input.rightIconButton
+                        { onPress = on StartGroupingItems
+                        , icon = Icons.forward
+                        , labelText = "Start grouping"
+                        }
+                    ]
+
+                GroupingItems { items } ->
+                    [ Input.leftIconButton
+                        { onPress = on StartAddingItems
+                        , icon = Icons.back
+                        , labelText = "Back"
+                        }
+                    , Input.rightIconButton
+                        { onPress = on StartVoting
+                        , icon = Icons.forward
+                        , labelText = "Start voting"
+                        }
+                    ]
+
+                Voting _ ->
+                    [ Input.leftIconButton
+                        { onPress = on StartGroupingItems
+                        , icon = Icons.back
+                        , labelText = "Back"
+                        }
                     ]
             )
         ]
 
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
-view layout on (Model boardId startTime state) =
+view layout on (Model user boardId startTime state) =
     column
         [ width fill
         , height fill
@@ -292,11 +450,15 @@ view layout on (Model boardId startTime state) =
             ]
         , boardControls state on -- TODO: Only show these for the facilitator
         , case state of
+            Loading ->
+                Loading.view
+
             ReadyToStart ->
                 Intro.view
 
             DiscussingPreviousActions previousActions ->
-                PreviousActions.view layout
+                PreviousActions.view
+                    layout
                     { markActionAsNotStarted = on << MarkActionAsNotStarted
                     , markActionAsInProgress = on << MarkActionAsStarted
                     , markActionAsComplete = on << MarkActionAsComplete
@@ -304,7 +466,8 @@ view layout on (Model boardId startTime state) =
                     previousActions
 
             AddingDiscussionItems inputs discussionItems ->
-                AddingItems.view layout
+                AddingItems.view
+                    layout
                     { msgs =
                         { updateStartField =
                             on << UpdateField Start
@@ -315,6 +478,7 @@ view layout on (Model boardId startTime state) =
                         , submitStartItem = on <| SubmitField Start
                         , submitStopItem = on <| SubmitField Stop
                         , submitContinueItem = on <| SubmitField Continue
+                        , removeItem = on << RemoveDiscussionItem
                         }
                     , values =
                         { startField = inputs.start
@@ -323,11 +487,27 @@ view layout on (Model boardId startTime state) =
                         }
                     }
                     discussionItems
+
+            GroupingItems { items, toGroup } ->
+                GroupingItems.view
+                    layout
+                    { addToGroupingList = on << AddToGroupingList
+                    , groupItems = on GroupItems
+                    , itemsInGroupingList =
+                        Set.toList toGroup
+                    }
+                    items
+
+            Voting items ->
+                Voting.view
+                    layout
+                    user
+                    (on << ToggleVote)
+                    items
         , Components.link Route.Dashboard [] "Back to dashboard"
         ]
 
 
-init : String -> Time.Posix -> Model
-init boardId now =
-    -- TODO: Add Loading state and fetch board here
-    Model boardId now ReadyToStart
+init : User -> String -> Time.Posix -> Model
+init user boardId now =
+    Model user boardId now Loading
