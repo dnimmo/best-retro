@@ -9,11 +9,14 @@ module DiscussionItem exposing
     , getAllStopItems
     , getContent
     , getId
+    , getLabel
     , isContinue
     , isStart
     , isStop
     )
 
+import Components.Label as Label
+import Element exposing (Element)
 import Time
 import UniqueID exposing (UniqueID)
 
@@ -72,6 +75,19 @@ getAllStopItems items =
 getAllContinueItems : List DiscussionItem -> List DiscussionItem
 getAllContinueItems items =
     List.filter isContinue items
+
+
+getLabel : DiscussionItem -> Element msg
+getLabel (DiscussionItem { type_ }) =
+    case type_ of
+        Start ->
+            Label.startSmall
+
+        Stop ->
+            Label.stopSmall
+
+        Continue ->
+            Label.continueSmall
 
 
 type alias CreateItemParams =

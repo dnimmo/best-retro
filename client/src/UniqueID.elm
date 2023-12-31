@@ -1,5 +1,6 @@
 module UniqueID exposing
     ( UniqueID
+    , compare
     , decode
     , encode
     , generateDefaultID
@@ -66,3 +67,8 @@ decode =
                     Err _ ->
                         Decode.fail <| "Invalid UUID"
             )
+
+
+compare : UniqueID -> UniqueID -> Bool
+compare a b =
+    toComparable a == toComparable b

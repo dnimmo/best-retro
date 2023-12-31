@@ -14,6 +14,8 @@ module Components.Input exposing
     , removeButton
     , rightIconButton
     , secondaryActionButton
+    , startDiscussion
+    , textField
     , upvoteButton
     )
 
@@ -276,6 +278,32 @@ inputFieldWithInsetButton { onChange, value, labelString, onSubmit } =
         ]
 
 
+textField :
+    { onChange : String -> msg
+    , value : String
+    , labelString : String
+    }
+    -> Element msg
+textField { onChange, value, labelString } =
+    column
+        [ Layout.commonColumnSpacing
+        , width fill
+        ]
+        [ el [] <| text labelString
+        , Input.text
+            [ Border.color Colours.grey
+            , Border.width 1
+            , Border.rounded 5
+            , width fill
+            ]
+            { onChange = onChange
+            , text = value
+            , label = Input.labelHidden labelString
+            , placeholder = Nothing
+            }
+        ]
+
+
 type ControlType
     = Add
     | Remove
@@ -284,6 +312,7 @@ type ControlType
     | Combine Int
     | Upvote
     | Downvote
+    | Discuss
 
 
 controlButtonStyles : ControlType -> List (Element.Attribute msg)
@@ -394,6 +423,9 @@ controlButton controlType msg =
 
                     Downvote ->
                         Icons.downvote
+
+                    Discuss ->
+                        Icons.discuss
         , onPress = Just msg
         }
 
@@ -445,3 +477,8 @@ upvoteButton msg =
 downvoteButton : msg -> Element msg
 downvoteButton msg =
     controlButton Downvote msg
+
+
+startDiscussion : msg -> Element msg
+startDiscussion msg =
+    controlButton Discuss msg

@@ -81,8 +81,8 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we start doing?"
                     , onSubmit = msgs.submitStartItem
                     }
-                , Shared.discussionItemColumn <|
-                    List.map (Shared.discussionItemCard Shared.Start msgs.removeItem) <|
+                , Shared.discussionItemColumn Nothing <|
+                    List.map (Shared.discussionItemCard msgs.removeItem) <|
                         DiscussionItem.getAllStartItems discussionItems
                 ]
             , column
@@ -94,8 +94,8 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we stop doing?"
                     , onSubmit = msgs.submitStopItem
                     }
-                , Shared.discussionItemColumn <|
-                    List.map (Shared.discussionItemCard Shared.Stop msgs.removeItem) <|
+                , Shared.discussionItemColumn Nothing <|
+                    List.map (Shared.discussionItemCard msgs.removeItem) <|
                         DiscussionItem.getAllStopItems discussionItems
                 ]
             , column
@@ -107,9 +107,9 @@ view layout { msgs, values } discussionItems =
                     , labelString = "What should we keep doing?"
                     , onSubmit = msgs.submitContinueItem
                     }
-                , Shared.discussionItemColumn <|
+                , Shared.discussionItemColumn Nothing <|
                     List.map
-                        (Shared.discussionItemCard Shared.Continue msgs.removeItem)
+                        (Shared.discussionItemCard msgs.removeItem)
                     <|
                         DiscussionItem.getAllContinueItems discussionItems
                 ]

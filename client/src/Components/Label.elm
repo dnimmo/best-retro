@@ -1,4 +1,12 @@
-module Components.Label exposing (continue, continueSmall, start, startSmall, stop, stopSmall)
+module Components.Label exposing
+    ( action
+    , continue
+    , continueSmall
+    , start
+    , startSmall
+    , stop
+    , stopSmall
+    )
 
 import Components.Colours as Colours
 import Components.Icons as Icons
@@ -12,6 +20,7 @@ type Label
     = Start
     | Stop
     | Continue
+    | Action
 
 
 type Size
@@ -30,6 +39,9 @@ details l =
 
         Continue ->
             ( "CONTINUE", Icons.continue )
+
+        Action ->
+            ( "ACTION", Icons.action )
 
 
 label : Label -> Size -> Element msg
@@ -97,3 +109,8 @@ stopSmall =
 continueSmall : Element msg
 continueSmall =
     label Continue Small
+
+
+action : Element msg
+action =
+    label Action Full

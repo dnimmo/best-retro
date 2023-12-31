@@ -2,6 +2,7 @@ module Page.Board exposing (Model, Msg, init, update, view)
 
 import ActionItem exposing (ActionItem)
 import Components
+import Components.Card exposing (CardVariant(..))
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
@@ -12,6 +13,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Page.Board.AddingItems as AddingItems
+import Page.Board.Discussing as Discussing
 import Page.Board.DiscussingPreviousActions as PreviousActions
 import Page.Board.GroupingItems as GroupingItems
 import Page.Board.Intro as Intro
@@ -51,6 +53,17 @@ type State
             , votes : Set String
             }
         )
+    | Discussing
+        (List
+            { item : DiscussionItem
+            , votes : Set String
+            }
+        )
+        (List ActionItem)
+        { currentlyDiscussing : Maybe DiscussionItem
+        , actionField : String
+        , assignee : String
+        }
 
 
 type alias AddingItemsInputs =
@@ -93,8 +106,13 @@ type Msg
     | StartGroupingItems
     | AddToGroupingList UniqueID
     | GroupItems
-    | StartVoting
+    | MoveToVoting
     | ToggleVote DiscussionItem
+    | StartDiscussing
+    | DiscussItem DiscussionItem
+    | UpdateActionField String
+    | UpdateAssigneeField String
+    | SubmitAction
 
 
 update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
@@ -293,7 +311,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                     , Cmd.none
                     )
 
-                StartVoting ->
+                MoveToVoting ->
                     ( Model user boardId startTime <|
                         Voting
                             (List.map
@@ -336,6 +354,88 @@ update now on msg ((Model user boardId startTime state) as model) =
                                 details
                     , Cmd.none
                     )
+
+                StartDiscussing ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            details
+                            []
+                            { currentlyDiscussing = Nothing
+                            , actionField = ""
+                            , assignee = ""
+                            }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Discussing discussionItemsAndVotes actions ({ currentlyDiscussing, actionField, assignee } as currentDiscussion) ->
+            case msg of
+                MoveToVoting ->
+                    ( Model user boardId startTime <|
+                        Voting
+                            discussionItemsAndVotes
+                    , Cmd.none
+                    )
+
+                DiscussItem item ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            discussionItemsAndVotes
+                            actions
+                            { currentlyDiscussing = Just item
+                            , actionField = ""
+                            , assignee = ""
+                            }
+                    , Cmd.none
+                    )
+
+                UpdateActionField str ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            discussionItemsAndVotes
+                            actions
+                            { currentDiscussion
+                                | actionField = str
+                            }
+                    , Cmd.none
+                    )
+
+                UpdateAssigneeField str ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            discussionItemsAndVotes
+                            actions
+                            { currentDiscussion
+                                | assignee = str
+                            }
+                    , Cmd.none
+                    )
+
+                SubmitAction ->
+                    if (String.isEmpty <| String.trim actionField) || (String.isEmpty <| String.trim assignee) then
+                        ( model, Cmd.none )
+
+                    else
+                        ( Model user boardId startTime <|
+                            Discussing
+                                discussionItemsAndVotes
+                                (ActionItem.new
+                                    { description = String.trim actionField
+                                    , author = User.getId user
+                                    , now = now
+                                    , maybeDiscussionItem = currentlyDiscussing
+                                    , assignee = assignee
+                                    }
+                                    :: actions
+                                )
+                                { currentlyDiscussing = currentlyDiscussing
+                                , actionField = ""
+                                , assignee = ""
+                                }
+                        , Cmd.none
+                        )
 
                 _ ->
                     ( model, Cmd.none )
@@ -419,7 +519,7 @@ boardControls state on =
                         , labelText = "Back"
                         }
                     , Input.rightIconButton
-                        { onPress = on StartVoting
+                        { onPress = on MoveToVoting
                         , icon = Icons.forward
                         , labelText = "Start voting"
                         }
@@ -428,6 +528,19 @@ boardControls state on =
                 Voting _ ->
                     [ Input.leftIconButton
                         { onPress = on StartGroupingItems
+                        , icon = Icons.back
+                        , labelText = "Back"
+                        }
+                    , Input.rightIconButton
+                        { onPress = on StartDiscussing
+                        , icon = Icons.forward
+                        , labelText = "Start Discussing"
+                        }
+                    ]
+
+                Discussing _ _ _ ->
+                    [ Input.leftIconButton
+                        { onPress = on MoveToVoting
                         , icon = Icons.back
                         , labelText = "Back"
                         }
@@ -504,6 +617,20 @@ view layout on (Model user boardId startTime state) =
                     user
                     (on << ToggleVote)
                     items
+
+            Discussing itemsAndVotes actions { currentlyDiscussing, actionField, assignee } ->
+                Discussing.view layout
+                    { startDiscussion = on << DiscussItem
+                    , updateActionField = on << UpdateActionField
+                    , updateAssigneeField = on << UpdateAssigneeField
+                    , submitAction = on SubmitAction
+                    , actionField = actionField
+                    , discussed = []
+                    , currentlyDiscussing = currentlyDiscussing
+                    , assignee = assignee
+                    }
+                    itemsAndVotes
+                    actions
         , Components.link Route.Dashboard [] "Back to dashboard"
         ]
 

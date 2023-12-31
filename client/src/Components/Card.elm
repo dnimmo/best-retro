@@ -21,6 +21,7 @@ type Card msg
 type CardVariant msg
     = Display
     | Action ActionItem (ActionMsgs msg)
+    | BasicAction ActionItem
     | Link Route
 
 
@@ -51,6 +52,55 @@ styles { highlight } =
     ]
 
 
+basicActionCard : ActionItem -> Element msg
+basicActionCard item =
+    row
+        [ width fill
+        , height fill
+        ]
+        [ paragraph
+            [ width fill
+            , paddingXY 15 25
+            ]
+            [ el [ width fill ] <| text <| ActionItem.getContent item
+            ]
+        , el
+            [ alignRight
+            , width (fill |> minimum 180)
+            , paddingXY 0 10
+            , height fill
+            , alignTop
+            , Border.widthEach
+                { edges
+                    | left = 2
+                }
+            , Border.color Colours.mediumBlueTransparent
+            ]
+          <|
+            column
+                [ Layout.commonColumnSpacing
+                , centerX
+                , centerY
+                ]
+                [ row
+                    [ Layout.lessRowSpacing
+                    ]
+                    [ el [] Icons.user
+                    , el [] <|
+                        text <|
+                            ActionItem.getAssignee item
+                    ]
+                , row [ Layout.lessRowSpacing ]
+                    [ el [] <| ActionItem.getIcon item
+                    , el [] <|
+                        text <|
+                            ActionItem.statusToString <|
+                                ActionItem.getStatus item
+                    ]
+                ]
+        ]
+
+
 card : Card msg -> Element msg
 card (Card str variant) =
     let
@@ -66,6 +116,9 @@ card (Card str variant) =
                                 ActionItem.isComplete item
 
                             Link _ ->
+                                False
+
+                            BasicAction _ ->
                                 False
                     }
                 )
@@ -99,51 +152,7 @@ card (Card str variant) =
                                     , labelString = "Complete"
                                     }
                         in
-                        [ row
-                            [ width fill
-                            , height fill
-                            ]
-                            [ paragraph
-                                [ width fill
-                                , paddingXY 15 25
-                                ]
-                                [ el [ width fill ] <| text str
-                                ]
-                            , el
-                                [ alignRight
-                                , width (fill |> minimum 180)
-                                , paddingXY 0 10
-                                , height fill
-                                , alignTop
-                                , Border.widthEach
-                                    { edges
-                                        | left = 2
-                                    }
-                                , Border.color Colours.mediumBlueTransparent
-                                ]
-                              <|
-                                column
-                                    [ Layout.commonColumnSpacing
-                                    , centerX
-                                    , centerY
-                                    ]
-                                    [ row
-                                        [ Layout.lessRowSpacing
-                                        ]
-                                        [ el [] Icons.user
-                                        , el [] <|
-                                            text <|
-                                                ActionItem.getAssignee item
-                                        ]
-                                    , row [ Layout.lessRowSpacing ]
-                                        [ el [] <| ActionItem.getIcon item
-                                        , el [] <|
-                                            text <|
-                                                ActionItem.statusToString <|
-                                                    ActionItem.getStatus item
-                                        ]
-                                    ]
-                            ]
+                        [ basicActionCard item
                         , el
                             [ Border.widthEach { edges | top = 2 }
                             , width fill
@@ -173,6 +182,10 @@ card (Card str variant) =
                                         , completedButton
                                         ]
                                 )
+                        ]
+
+                    BasicAction item ->
+                        [ basicActionCard item
                         ]
 
                     Link _ ->
@@ -207,6 +220,13 @@ action item msgs =
     card <|
         Card (ActionItem.getContent item) <|
             Action item msgs
+
+
+basicAction : ActionItem -> Element msg
+basicAction item =
+    card <|
+        Card (ActionItem.getContent item) <|
+            BasicAction item
 
 
 display : String -> Element msg

@@ -232,3 +232,15 @@ downvote : Element msg
 downvote =
     html <|
         Icons.thumb_down smallIconSize IconTypes.Inherit
+
+
+discuss : Element msg
+discuss =
+    html <|
+        Icons.forum smallIconSize IconTypes.Inherit
+
+
+action : Element msg
+action =
+    html <|
+        Icons.task smallIconSize IconTypes.Inherit

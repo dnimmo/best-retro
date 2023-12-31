@@ -1,9 +1,9 @@
 module Page.Board.Shared exposing
-    ( Category(..)
-    , discussionColumnStyles
+    ( discussionColumnStyles
     , discussionItemCard
     , discussionItemColumn
     , groupingItemCard
+    , itemCard
     , votingItemCard
     )
 
@@ -21,14 +21,8 @@ import Set exposing (Set)
 import UniqueID exposing (UniqueID)
 
 
-type Category
-    = Start
-    | Stop
-    | Continue
-
-
-itemCard : Category -> DiscussionItem -> Maybe (Element msg) -> Element msg
-itemCard category discussionItem maybeExtraContent =
+itemCard : DiscussionItem -> Maybe (Element msg) -> Element msg
+itemCard discussionItem maybeExtraContent =
     column
         (paddingEach
             { top = 25
@@ -60,9 +54,9 @@ itemCard category discussionItem maybeExtraContent =
         ]
 
 
-discussionItemCard : Category -> (DiscussionItem -> msg) -> DiscussionItem -> Element msg
-discussionItemCard category removeMsg discussionItem =
-    itemCard category discussionItem <|
+discussionItemCard : (DiscussionItem -> msg) -> DiscussionItem -> Element msg
+discussionItemCard removeMsg discussionItem =
+    itemCard discussionItem <|
         Just <|
             row
                 [ width fill
@@ -83,9 +77,9 @@ discussionItemCard category removeMsg discussionItem =
                 ]
 
 
-groupingItemCard : Category -> (UniqueID -> msg) -> List String -> msg -> DiscussionItem -> Element msg
-groupingItemCard category addToGroupingList itemsInGroupingList groupItems discussionItem =
-    itemCard category discussionItem <|
+groupingItemCard : (UniqueID -> msg) -> List String -> msg -> DiscussionItem -> Element msg
+groupingItemCard addToGroupingList itemsInGroupingList groupItems discussionItem =
+    itemCard discussionItem <|
         Just <|
             row
                 [ width fill
@@ -123,9 +117,9 @@ groupingItemCard category addToGroupingList itemsInGroupingList groupItems discu
                 ]
 
 
-votingItemCard : Category -> UniqueID -> (DiscussionItem -> msg) -> { item : DiscussionItem, votes : Set String } -> Element msg
-votingItemCard category currentUserId toggleVoteMsg { item, votes } =
-    itemCard category item <|
+votingItemCard : UniqueID -> (DiscussionItem -> msg) -> { item : DiscussionItem, votes : Set String } -> Element msg
+votingItemCard currentUserId toggleVoteMsg { item, votes } =
+    itemCard item <|
         Just <|
             el
                 [ width fill
@@ -178,10 +172,20 @@ discussionColumnStyles =
     ]
 
 
-discussionItemColumn : List (Element msg) -> Element msg
-discussionItemColumn =
+discussionItemColumn : Maybe (Element msg) -> List (Element msg) -> Element msg
+discussionItemColumn elementInFront contents =
     column
         [ Layout.commonColumnSpacing
         , paddingXY 0 20
         , width fill
+        , height fill
+        , alignTop
+        , inFront <|
+            case elementInFront of
+                Just element ->
+                    element
+
+                Nothing ->
+                    none
         ]
+        contents

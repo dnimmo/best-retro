@@ -10,6 +10,7 @@ module ActionItem exposing
     , getStatus
     , isComplete
     , isInProgress
+    , new
     , notCompletedBefore
     , setComplete
     , setInProgress
@@ -18,8 +19,10 @@ module ActionItem exposing
     )
 
 import Components.Icons as Icons
+import DiscussionItem exposing (DiscussionItem)
 import Element exposing (Element)
 import Time
+import UniqueID exposing (UniqueID)
 
 
 type Status
@@ -43,16 +46,17 @@ getIcon (ActionItem { status }) =
 
 type ActionItem
     = ActionItem
-        { id : String
-        , author : String
+        { id : UniqueID
+        , author : UniqueID
         , assignee : String
         , date : Time.Posix
         , content : String
         , status : Status
+        , originalDiscussionItem : Maybe DiscussionItem
         }
 
 
-getId : ActionItem -> String
+getId : ActionItem -> UniqueID
 getId (ActionItem { id }) =
     id
 
@@ -103,12 +107,12 @@ statusToString status =
             "Complete"
 
 
-setComplete : String -> List ActionItem -> List ActionItem
+setComplete : UniqueID -> List ActionItem -> List ActionItem
 setComplete itemId actions =
     actions
         |> List.map
             (\(ActionItem actionItem) ->
-                if actionItem.id == itemId then
+                if UniqueID.compare actionItem.id itemId then
                     ActionItem
                         { actionItem
                             | status = Complete
@@ -119,12 +123,12 @@ setComplete itemId actions =
             )
 
 
-setInProgress : String -> List ActionItem -> List ActionItem
+setInProgress : UniqueID -> List ActionItem -> List ActionItem
 setInProgress itemId actions =
     actions
         |> List.map
             (\(ActionItem actionItem) ->
-                if actionItem.id == itemId then
+                if UniqueID.compare actionItem.id itemId then
                     ActionItem
                         { actionItem
                             | status = InProgress
@@ -135,12 +139,12 @@ setInProgress itemId actions =
             )
 
 
-setToDo : String -> List ActionItem -> List ActionItem
+setToDo : UniqueID -> List ActionItem -> List ActionItem
 setToDo itemId actions =
     actions
         |> List.map
             (\(ActionItem actionItem) ->
-                if actionItem.id == itemId then
+                if UniqueID.compare actionItem.id itemId then
                     ActionItem
                         { actionItem
                             | status = ToDo
@@ -154,28 +158,31 @@ setToDo itemId actions =
 devActionItems : List ActionItem
 devActionItems =
     [ ActionItem
-        { id = "1"
-        , author = "Dante"
+        { id = UniqueID.generateID (Time.millisToPosix 1000)
+        , author = UniqueID.generateDefaultID
         , assignee = "Dante"
         , date = Time.millisToPosix 0
         , content = "Chirp loudly"
         , status = ToDo
+        , originalDiscussionItem = Nothing
         }
     , ActionItem
-        { id = "2"
-        , author = "Dante"
+        { id = UniqueID.generateID (Time.millisToPosix 100)
+        , author = UniqueID.generateDefaultID
         , assignee = "Dante"
         , date = Time.millisToPosix 0
         , content = "Be a handsome little man"
         , status = InProgress
+        , originalDiscussionItem = Nothing
         }
     , ActionItem
-        { id = "3"
-        , author = "Dante"
+        { id = UniqueID.generateID (Time.millisToPosix 10)
+        , author = UniqueID.generateDefaultID
         , assignee = "Nimmo"
         , date = Time.millisToPosix 0
         , content = "Feed Dante"
         , status = Complete
+        , originalDiscussionItem = Nothing
         }
     ]
 
@@ -190,3 +197,23 @@ notCompletedBefore posix =
                 || status
                 /= Complete
         )
+
+
+new :
+    { description : String
+    , now : Time.Posix
+    , author : UniqueID
+    , maybeDiscussionItem : Maybe DiscussionItem
+    , assignee : String
+    }
+    -> ActionItem
+new { description, now, author, maybeDiscussionItem, assignee } =
+    ActionItem
+        { id = UniqueID.generateID now
+        , author = author
+        , assignee = assignee
+        , date = now
+        , content = description
+        , status = ToDo
+        , originalDiscussionItem = maybeDiscussionItem
+        }

@@ -62,8 +62,8 @@ view :
     -> Element msg
 view layout user toggleVoteMsg discussionItems =
     let
-        votingCard category =
-            Shared.votingItemCard category (User.getId user) toggleVoteMsg
+        votingCard =
+            Shared.votingItemCard (User.getId user) toggleVoteMsg
     in
     column
         [ width fill
@@ -77,23 +77,23 @@ view layout user toggleVoteMsg discussionItems =
             [ column
                 Shared.discussionColumnStyles
                 [ Label.start
-                , Shared.discussionItemColumn <|
-                    List.map (votingCard Shared.Start) <|
+                , Shared.discussionItemColumn Nothing <|
+                    List.map votingCard <|
                         startItems discussionItems
                 ]
             , column
                 Shared.discussionColumnStyles
                 [ Label.stop
-                , Shared.discussionItemColumn <|
-                    List.map (votingCard Shared.Stop) <|
+                , Shared.discussionItemColumn Nothing <|
+                    List.map votingCard <|
                         stopItems discussionItems
                 ]
             , column
                 Shared.discussionColumnStyles
                 [ Label.continue
-                , Shared.discussionItemColumn <|
+                , Shared.discussionItemColumn Nothing <|
                     List.map
-                        (votingCard Shared.Continue)
+                        votingCard
                     <|
                         continueItems discussionItems
                 ]

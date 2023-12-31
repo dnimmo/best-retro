@@ -53,8 +53,8 @@ type alias Params msg =
 view : Layout -> Params msg -> List DiscussionItem -> Element msg
 view layout { addToGroupingList, groupItems, itemsInGroupingList } discussionItems =
     let
-        groupItemsCard category =
-            Shared.groupingItemCard category addToGroupingList itemsInGroupingList groupItems
+        groupItemsCard =
+            Shared.groupingItemCard addToGroupingList itemsInGroupingList groupItems
     in
     if List.isEmpty discussionItems then
         emptyDiscussionItemView
@@ -72,23 +72,23 @@ view layout { addToGroupingList, groupItems, itemsInGroupingList } discussionIte
                 [ column
                     Shared.discussionColumnStyles
                     [ Label.start
-                    , Shared.discussionItemColumn <|
-                        List.map (groupItemsCard Shared.Start) <|
+                    , Shared.discussionItemColumn Nothing <|
+                        List.map groupItemsCard <|
                             DiscussionItem.getAllStartItems discussionItems
                     ]
                 , column
                     Shared.discussionColumnStyles
                     [ Label.stop
-                    , Shared.discussionItemColumn <|
-                        List.map (groupItemsCard Shared.Stop) <|
+                    , Shared.discussionItemColumn Nothing <|
+                        List.map groupItemsCard <|
                             DiscussionItem.getAllStopItems discussionItems
                     ]
                 , column
                     Shared.discussionColumnStyles
                     [ Label.continue
-                    , Shared.discussionItemColumn <|
+                    , Shared.discussionItemColumn Nothing <|
                         List.map
-                            (groupItemsCard Shared.Continue)
+                            groupItemsCard
                         <|
                             DiscussionItem.getAllContinueItems discussionItems
                     ]
