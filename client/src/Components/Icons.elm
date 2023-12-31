@@ -144,6 +144,12 @@ completed =
         Icons.check_circle smallIconSize defaultIconColour
 
 
+completedLarge : Element msg
+completedLarge =
+    html <|
+        Icons.check_circle iconSize defaultIconColour
+
+
 toDo : Element msg
 toDo =
     html <|
@@ -237,7 +243,7 @@ downvote =
 discuss : Element msg
 discuss =
     html <|
-        Icons.forum smallIconSize IconTypes.Inherit
+        Icons.forum iconSize IconTypes.Inherit
 
 
 action : Element msg

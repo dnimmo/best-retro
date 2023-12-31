@@ -43,7 +43,7 @@ discussingItemCard :
     }
     -> { item : DiscussionItem, votes : Int }
     -> Element msg
-discussingItemCard { startDiscussion } { item, votes } =
+discussingItemCard { startDiscussion, hasBeenDiscussed } { item, votes } =
     Shared.itemCard item <|
         Just <|
             row
@@ -69,20 +69,30 @@ discussingItemCard { startDiscussion } { item, votes } =
                   <|
                     text <|
                         String.fromInt votes
-                , el [ alignRight ] <| Input.startDiscussion (startDiscussion item)
+                , el [ alignRight ] <|
+                    if hasBeenDiscussed then
+                        Input.completeButton <| startDiscussion item
+
+                    else
+                        Input.primaryActionButton
+                            { onPress = startDiscussion item
+                            , labelString = "Start discussion"
+                            }
                 ]
 
 
 currentlyDiscussingElement :
     { updateActionField : String -> msg
     , updateAssigneeField : String -> msg
+    , cancelDiscussion : msg
+    , finishDiscussingItem : DiscussionItem -> msg
     , submitAction : msg
     , actionField : String
     , assignee : String
     }
     -> DiscussionItem
     -> Element msg
-currentlyDiscussingElement { updateActionField, updateAssigneeField, submitAction, actionField, assignee } item =
+currentlyDiscussingElement { updateActionField, updateAssigneeField, submitAction, actionField, assignee, cancelDiscussion, finishDiscussingItem } item =
     el
         [ height fill
         , width fill
@@ -99,8 +109,21 @@ currentlyDiscussingElement { updateActionField, updateAssigneeField, submitActio
             [ width fill
             , Layout.extraColumnSpacing
             ]
-            [ el [ moveDown 20 ] <| text "Currently discussing"
-            , Shared.itemCard item Nothing
+            [ row
+                [ width fill
+                , moveDown 5
+                ]
+                [ el [] <|
+                    text "Currently discussing"
+                , el [ alignRight ] <|
+                    Input.cancelButton cancelDiscussion
+                ]
+            , el
+                [ moveUp 33
+                , width fill
+                ]
+              <|
+                Shared.itemCard item Nothing
             , row
                 [ width fill
                 , Layout.commonRowSpacing
@@ -126,6 +149,16 @@ currentlyDiscussingElement { updateActionField, updateAssigneeField, submitActio
                         , value = assignee
                         }
                 ]
+            , row
+                [ width fill
+                , Layout.commonRowSpacing
+                ]
+                [ el [ alignRight ] <|
+                    Input.primaryActionButton
+                        { onPress = finishDiscussingItem item
+                        , labelString = "Finish discussing this item"
+                        }
+                ]
             ]
 
 
@@ -140,6 +173,8 @@ view :
         { startDiscussion : DiscussionItem -> msg
         , updateActionField : String -> msg
         , updateAssigneeField : String -> msg
+        , cancelDiscussion : msg
+        , finishDiscussingItem : DiscussionItem -> msg
         , submitAction : msg
         , actionField : String
         , assignee : String
@@ -155,7 +190,7 @@ view :
     ->
         Element
             msg
-view layout { startDiscussion, updateActionField, updateAssigneeField, discussed, assignee, currentlyDiscussing, actionField, submitAction } itemsAndVotes actions =
+view layout { startDiscussion, updateActionField, updateAssigneeField, discussed, cancelDiscussion, assignee, currentlyDiscussing, actionField, finishDiscussingItem, submitAction } itemsAndVotes actions =
     Layout.containingElement layout
         [ width fill
         , height fill
@@ -171,8 +206,14 @@ view layout { startDiscussion, updateActionField, updateAssigneeField, discussed
                             updateAssigneeField
                         , submitAction =
                             submitAction
-                        , actionField = actionField
-                        , assignee = assignee
+                        , actionField =
+                            actionField
+                        , assignee =
+                            assignee
+                        , cancelDiscussion =
+                            cancelDiscussion
+                        , finishDiscussingItem =
+                            finishDiscussingItem
                         }
                 )
                 currentlyDiscussing
@@ -201,16 +242,24 @@ view layout { startDiscussion, updateActionField, updateAssigneeField, discussed
                 column
                     [ width fill
                     , centerY
+                    , Layout.commonColumnSpacing
                     ]
                     [ el [ width fill, height fill ] <|
                         image
-                            [ width (fill |> maximum 300)
+                            [ width <| px 340
                             , height fill
                             , centerX
                             ]
                             { src = "/img/absurd-hourglass.png"
                             , description = ""
                             }
+                    , el
+                        [ width <| px 260
+                        , Font.italic
+                        , centerX
+                        ]
+                      <|
+                        text "New actions will appear here"
                     ]
 
               else

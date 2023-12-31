@@ -5,6 +5,7 @@ import Components.Label as Label
 import Components.Layout as Layout exposing (Layout)
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
+import Element.Font as Font
 import Page.Board.Shared as Shared
 
 
@@ -38,7 +39,7 @@ emptyDiscussionItemView =
                 [ width (fill |> maximum 300)
                 , centerX
                 ]
-                [ text "No items have been added yet. Add some items to talk about, or this is going to be a very short session!"
+                [ el [ Font.italic ] <| text "No items have been added yet. Add some items to talk about, or this is going to be a very short session!"
                 ]
             ]
 

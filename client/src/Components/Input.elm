@@ -1,7 +1,9 @@
 module Components.Input exposing
     ( addButton
+    , cancelButton
     , checkbox
     , combineButton
+    , completeButton
     , currentPasswordDisplayed
     , currentPasswordHidden
     , downvoteButton
@@ -313,11 +315,18 @@ type ControlType
     | Upvote
     | Downvote
     | Discuss
+    | Complete
 
 
 controlButtonStyles : ControlType -> List (Element.Attribute msg)
 controlButtonStyles controlType =
-    [ Background.color Colours.white
+    [ Background.color <|
+        case controlType of
+            GoBack ->
+                Colours.skyBlue
+
+            _ ->
+                Colours.white
     , Font.color Colours.mediumBlue
     , height fill
     , paddingXY 10 <|
@@ -426,6 +435,9 @@ controlButton controlType msg =
 
                     Discuss ->
                         Icons.discuss
+
+                    Complete ->
+                        Icons.completedLarge
         , onPress = Just msg
         }
 
@@ -481,4 +493,23 @@ downvoteButton msg =
 
 startDiscussion : msg -> Element msg
 startDiscussion msg =
-    controlButton Discuss msg
+    buttonContainer <| controlButton Discuss msg
+
+
+cancelButton : msg -> Element msg
+cancelButton msg =
+    controlButton GoBack msg
+
+
+completeButton : msg -> Element msg
+completeButton msg =
+    controlButton Complete msg
+
+
+buttonContainer : Element msg -> Element msg
+buttonContainer =
+    el
+        [ Border.width 1
+        , Border.rounded 5
+        , Border.color Colours.darkBlue
+        ]

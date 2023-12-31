@@ -4,6 +4,7 @@ import Components.Label as Label
 import Components.Layout as Layout exposing (Layout)
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
+import Element.Font as Font
 import Page.Board.Shared as Shared
 import UniqueID exposing (UniqueID)
 
@@ -27,7 +28,7 @@ emptyDiscussionItemView =
                 ]
               <|
                 image
-                    [ width (fill |> maximum 300)
+                    [ width (fill |> maximum 340)
                     , centerX
                     , centerY
                     ]
@@ -35,10 +36,10 @@ emptyDiscussionItemView =
                     , description = "No items"
                     }
             , paragraph
-                [ width (fill |> maximum 300)
+                [ width (fill |> maximum 340)
                 , centerX
                 ]
-                [ text "No items have been added. I guess everything is perfect!"
+                [ el [ Font.italic ] <| text "No items have been added. I guess everything is perfect!"
                 ]
             ]
 

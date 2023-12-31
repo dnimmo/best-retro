@@ -5,7 +5,7 @@ import Components
 import Components.Card exposing (CardVariant(..))
 import Components.Colours as Colours
 import Components.Font as Font
-import Components.Icons as Icons
+import Components.Icons as Icons exposing (discuss)
 import Components.Input as Input
 import Components.Layout as Layout exposing (Layout, commonRowSpacing)
 import DiscussionItem exposing (DiscussionItem)
@@ -63,6 +63,7 @@ type State
         { currentlyDiscussing : Maybe DiscussionItem
         , actionField : String
         , assignee : String
+        , discussed : List DiscussionItem
         }
 
 
@@ -113,6 +114,8 @@ type Msg
     | UpdateActionField String
     | UpdateAssigneeField String
     | SubmitAction
+    | CancelDiscussion
+    | FinishDiscussingItem DiscussionItem
 
 
 update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
@@ -363,6 +366,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                             { currentlyDiscussing = Nothing
                             , actionField = ""
                             , assignee = ""
+                            , discussed = []
                             }
                     , Cmd.none
                     )
@@ -370,7 +374,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                 _ ->
                     ( model, Cmd.none )
 
-        Discussing discussionItemsAndVotes actions ({ currentlyDiscussing, actionField, assignee } as currentDiscussion) ->
+        Discussing discussionItemsAndVotes actions ({ currentlyDiscussing, actionField, assignee, discussed } as currentDiscussion) ->
             case msg of
                 MoveToVoting ->
                     ( Model user boardId startTime <|
@@ -384,9 +388,23 @@ update now on msg ((Model user boardId startTime state) as model) =
                         Discussing
                             discussionItemsAndVotes
                             actions
-                            { currentlyDiscussing = Just item
-                            , actionField = ""
-                            , assignee = ""
+                            { currentDiscussion
+                                | currentlyDiscussing = Just item
+                                , actionField = ""
+                                , assignee = ""
+                            }
+                    , Cmd.none
+                    )
+
+                CancelDiscussion ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            discussionItemsAndVotes
+                            actions
+                            { currentDiscussion
+                                | currentlyDiscussing = Nothing
+                                , actionField = ""
+                                , assignee = ""
                             }
                     , Cmd.none
                     )
@@ -430,12 +448,26 @@ update now on msg ((Model user boardId startTime state) as model) =
                                     }
                                     :: actions
                                 )
-                                { currentlyDiscussing = currentlyDiscussing
-                                , actionField = ""
-                                , assignee = ""
+                                { currentDiscussion
+                                    | currentlyDiscussing = currentlyDiscussing
+                                    , actionField = ""
+                                    , assignee = ""
                                 }
                         , Cmd.none
                         )
+
+                FinishDiscussingItem item ->
+                    ( Model user boardId startTime <|
+                        Discussing
+                            discussionItemsAndVotes
+                            actions
+                            { currentlyDiscussing = Nothing
+                            , actionField = ""
+                            , assignee = ""
+                            , discussed = item :: discussed
+                            }
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -618,14 +650,16 @@ view layout on (Model user boardId startTime state) =
                     (on << ToggleVote)
                     items
 
-            Discussing itemsAndVotes actions { currentlyDiscussing, actionField, assignee } ->
+            Discussing itemsAndVotes actions { currentlyDiscussing, actionField, discussed, assignee } ->
                 Discussing.view layout
                     { startDiscussion = on << DiscussItem
                     , updateActionField = on << UpdateActionField
                     , updateAssigneeField = on << UpdateAssigneeField
+                    , finishDiscussingItem = on << FinishDiscussingItem
                     , submitAction = on SubmitAction
+                    , cancelDiscussion = on CancelDiscussion
                     , actionField = actionField
-                    , discussed = []
+                    , discussed = discussed
                     , currentlyDiscussing = currentlyDiscussing
                     , assignee = assignee
                     }
