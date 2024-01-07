@@ -62,13 +62,15 @@ discussionItemCard removeMsg discussionItem =
                 [ width fill
                 , paddingEach { edges | top = 20 }
                 ]
-                [ el
-                    [ alignRight
-                    , mouseOver [ scale 1.2 ]
-                    ]
-                  <|
-                    Input.editButton (removeMsg discussionItem)
-                , el
+                [ -- TODO: Enable edit button
+                  --     el
+                  --     [ alignRight
+                  --     , mouseOver [ scale 1.2 ]
+                  --     ]
+                  --   <|
+                  --     Input.editButton (removeMsg discussionItem)
+                  -- ,
+                  el
                     [ alignRight
                     , mouseOver [ scale 1.2 ]
                     ]

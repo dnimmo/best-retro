@@ -276,8 +276,8 @@ update now on msg ((Model user boardId startTime state) as model) =
                 RemoveDiscussionItem item ->
                     ( Model user boardId startTime <|
                         AddingDiscussionItems inputs
-                            (List.filter (\i -> item /= i)
-                                discussionItems
+                            (discussionItems
+                                |> List.filter (\i -> item /= i)
                             )
                             timer
                     , Cmd.none
