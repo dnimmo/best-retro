@@ -126,6 +126,13 @@ urlChange url model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.state ) of
+        ( Tick now, _ ) ->
+            ( { model
+                | now = now
+              }
+            , Cmd.none
+            )
+
         ( ViewportResized viewportWidth, _ ) ->
             ( { model
                 | layout = Layout.getLayout viewportWidth

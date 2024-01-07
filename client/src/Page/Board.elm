@@ -273,6 +273,16 @@ update now on msg ((Model user boardId startTime state) as model) =
                       -- TODO send new item to server
                     )
 
+                RemoveDiscussionItem item ->
+                    ( Model user boardId startTime <|
+                        AddingDiscussionItems inputs
+                            (List.filter (\i -> item /= i)
+                                discussionItems
+                            )
+                            timer
+                    , Cmd.none
+                    )
+
                 StartGroupingItems ->
                     ( Model user boardId startTime <|
                         GroupingItems
@@ -323,31 +333,44 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 GroupItems ->
-                    let
-                        newItem =
-                            items
-                                |> List.filter (\item -> Set.member (UniqueID.toComparable (DiscussionItem.getId item)) toGroup)
-                                |> DiscussionItem.merge
-
-                        updatedItemList =
-                            items
-                                |> List.filter
-                                    (\item ->
-                                        not <|
-                                            Set.member
-                                                (UniqueID.toComparable
-                                                    (DiscussionItem.getId item)
-                                                )
-                                                toGroup
+                    case
+                        List.filter
+                            (\item ->
+                                Set.member
+                                    (UniqueID.toComparable
+                                        (DiscussionItem.getId item)
                                     )
-                    in
-                    ( Model user boardId startTime <|
-                        GroupingItems
-                            { items = newItem :: updatedItemList
-                            , toGroup = Set.empty
-                            }
-                    , Cmd.none
-                    )
+                                    toGroup
+                            )
+                            items
+                    of
+                        head :: remainingItems ->
+                            let
+                                newItem =
+                                    DiscussionItem.merge ( head, remainingItems )
+
+                                updatedItemList =
+                                    items
+                                        |> List.filter
+                                            (\item ->
+                                                not <|
+                                                    Set.member
+                                                        (UniqueID.toComparable
+                                                            (DiscussionItem.getId item)
+                                                        )
+                                                        toGroup
+                                            )
+                            in
+                            ( Model user boardId startTime <|
+                                GroupingItems
+                                    { items = newItem :: updatedItemList
+                                    , toGroup = Set.empty
+                                    }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 MoveToVoting ->
                     ( Model user boardId startTime <|

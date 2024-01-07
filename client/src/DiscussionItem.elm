@@ -127,27 +127,18 @@ createContinueItem =
 mergeTwo : DiscussionItem -> DiscussionItem -> DiscussionItem
 mergeTwo (DiscussionItem item1) (DiscussionItem item2) =
     DiscussionItem
-        { item2
+        { item1
             | content =
                 item1.content
-                    ++ " & "
+                    ++ " (AND) "
                     ++ item2.content
         }
 
 
-merge : List DiscussionItem -> DiscussionItem
-merge items =
-    List.foldl
-        (\a b ->
-            mergeTwo a b
-        )
-        (createStartItem
-            { authorID = "John Doe"
-            , content = ""
-            , timestamp = Time.millisToPosix 0
-            }
-        )
-        items
+merge : ( DiscussionItem, List DiscussionItem ) -> DiscussionItem
+merge ( firstItem, remainingItems ) =
+    remainingItems
+        |> List.foldr mergeTwo firstItem
 
 
 
@@ -164,28 +155,28 @@ devDiscussionItems =
         , type_ = Start
         }
     , DiscussionItem
-        { id = UniqueID.generateID (Time.millisToPosix 10)
+        { id = UniqueID.generateID (Time.millisToPosix 100000000)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should high-five each other"
         , type_ = Start
         }
     , DiscussionItem
-        { id = UniqueID.generateID (Time.millisToPosix 20)
+        { id = UniqueID.generateID (Time.millisToPosix 200000000)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should stop using TypeScript"
         , type_ = Stop
         }
     , DiscussionItem
-        { id = UniqueID.generateID (Time.millisToPosix 30)
+        { id = UniqueID.generateID (Time.millisToPosix 300000000)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should stop not high-fiving each other"
         , type_ = Stop
         }
     , DiscussionItem
-        { id = UniqueID.generateID (Time.millisToPosix 40)
+        { id = UniqueID.generateID (Time.millisToPosix 400000000)
         , author = "John Doe"
         , date = Time.millisToPosix 0
         , content = "We should continue being awesome"

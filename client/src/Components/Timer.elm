@@ -52,7 +52,7 @@ update msg ((Model ({ initialTimeLimit } as common) state) as model) =
         Start ->
             case state of
                 NotStarted ->
-                    Model common (Running <| initialTimeLimit - 1000)
+                    Model common (Running <| initialTimeLimit)
 
                 Paused timeRemaining ->
                     Model common (Running timeRemaining)
