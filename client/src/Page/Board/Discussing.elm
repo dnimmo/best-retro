@@ -6,6 +6,7 @@ import Components.Card as Card
 import Components.Colours as Colours
 import Components.Input as Input
 import Components.Layout as Layout exposing (Layout)
+import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
 import Element.Background as Background
@@ -84,15 +85,16 @@ discussingItemCard { startDiscussion, hasBeenDiscussed } { item, votes } =
 currentlyDiscussingElement :
     { updateActionField : String -> msg
     , updateAssigneeField : String -> msg
+    , onTimerMsg : Timer.Msg -> msg
     , cancelDiscussion : msg
     , finishDiscussingItem : DiscussionItem -> msg
     , submitAction : msg
     , actionField : String
     , assignee : String
     }
-    -> DiscussionItem
+    -> ( DiscussionItem, Timer.Model )
     -> Element msg
-currentlyDiscussingElement { updateActionField, updateAssigneeField, submitAction, actionField, assignee, cancelDiscussion, finishDiscussingItem } item =
+currentlyDiscussingElement { updateActionField, updateAssigneeField, submitAction, actionField, assignee, cancelDiscussion, onTimerMsg, finishDiscussingItem } ( item, timer ) =
     el
         [ height fill
         , width fill
@@ -150,10 +152,12 @@ currentlyDiscussingElement { updateActionField, updateAssigneeField, submitActio
                         }
                 ]
             , row
-                [ width fill
-                , Layout.commonRowSpacing
+                [ spacing 90
+                , alignRight
                 ]
-                [ el [ alignRight ] <|
+                [ el [] <|
+                    Timer.view onTimerMsg timer
+                , el [] <|
                     Input.primaryActionButton
                         { onPress = finishDiscussingItem item
                         , labelString = "Finish discussing this item"
@@ -175,11 +179,12 @@ view :
         , updateAssigneeField : String -> msg
         , cancelDiscussion : msg
         , finishDiscussingItem : DiscussionItem -> msg
+        , onTimerMsg : Timer.Msg -> msg
         , submitAction : msg
         , actionField : String
         , assignee : String
         , discussed : List DiscussionItem
-        , currentlyDiscussing : Maybe DiscussionItem
+        , currentlyDiscussing : Maybe ( DiscussionItem, Timer.Model )
         }
     ->
         List
@@ -190,7 +195,7 @@ view :
     ->
         Element
             msg
-view layout { startDiscussion, updateActionField, updateAssigneeField, discussed, cancelDiscussion, assignee, currentlyDiscussing, actionField, finishDiscussingItem, submitAction } itemsAndVotes actions =
+view layout { startDiscussion, updateActionField, updateAssigneeField, discussed, cancelDiscussion, assignee, currentlyDiscussing, onTimerMsg, actionField, finishDiscussingItem, submitAction } itemsAndVotes actions =
     Layout.containingElement layout
         [ width fill
         , height fill
@@ -214,6 +219,7 @@ view layout { startDiscussion, updateActionField, updateAssigneeField, discussed
                             cancelDiscussion
                         , finishDiscussingItem =
                             finishDiscussingItem
+                        , onTimerMsg = onTimerMsg
                         }
                 )
                 currentlyDiscussing

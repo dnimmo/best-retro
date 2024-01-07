@@ -1,13 +1,14 @@
-module Page.Board exposing (Model, Msg, init, update, view)
+module Page.Board exposing (Model, Msg, init, subscriptions, update, view)
 
 import ActionItem exposing (ActionItem)
 import Components
 import Components.Card exposing (CardVariant(..))
 import Components.Colours as Colours
 import Components.Font as Font
-import Components.Icons as Icons exposing (discuss)
+import Components.Icons as Icons
 import Components.Input as Input
 import Components.Layout as Layout exposing (Layout, commonRowSpacing)
+import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
 import Element.Background as Background
@@ -42,7 +43,7 @@ type State
     = Loading
     | ReadyToStart
     | DiscussingPreviousActions (List ActionItem)
-    | AddingDiscussionItems AddingItemsInputs (List DiscussionItem)
+    | AddingDiscussionItems AddingItemsInputs (List DiscussionItem) Timer.Model
     | GroupingItems
         { items : List DiscussionItem
         , toGroup : Set String
@@ -53,6 +54,7 @@ type State
             , votes : Set String
             }
         )
+        Timer.Model
     | Discussing
         (List
             { item : DiscussionItem
@@ -60,7 +62,7 @@ type State
             }
         )
         (List ActionItem)
-        { currentlyDiscussing : Maybe DiscussionItem
+        { currentlyDiscussing : Maybe ( DiscussionItem, Timer.Model )
         , actionField : String
         , assignee : String
         , discussed : List DiscussionItem
@@ -93,7 +95,8 @@ type Field
 
 
 type Msg
-    = SimulateLoading
+    = TimerMsg Timer.Msg
+    | SimulateLoading
     | StartAddingItems
     | PopulateDummyItems
     | ViewPreviousActions
@@ -177,15 +180,27 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 StartAddingItems ->
-                    ( Model user boardId startTime <| AddingDiscussionItems defaultAddingItemsInputs []
+                    ( Model user boardId startTime <|
+                        AddingDiscussionItems
+                            defaultAddingItemsInputs
+                            []
+                        <|
+                            Timer.init 5
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
-        AddingDiscussionItems inputs discussionItems ->
+        AddingDiscussionItems inputs discussionItems timer ->
             case msg of
+                TimerMsg timerMsg ->
+                    ( Model user boardId startTime <|
+                        AddingDiscussionItems inputs discussionItems <|
+                            Timer.update timerMsg timer
+                    , Cmd.none
+                    )
+
                 UpdateField field str ->
                     ( Model user boardId startTime <|
                         AddingDiscussionItems
@@ -206,6 +221,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                                     }
                             )
                             discussionItems
+                            timer
                     , Cmd.none
                     )
 
@@ -252,6 +268,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                              )
                                 :: discussionItems
                             )
+                            timer
                     , Cmd.none
                       -- TODO send new item to server
                     )
@@ -266,7 +283,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 PopulateDummyItems ->
-                    ( Model user boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems
+                    ( Model user boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems timer
                     , Cmd.none
                     )
 
@@ -306,9 +323,27 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 GroupItems ->
+                    let
+                        newItem =
+                            items
+                                |> List.filter (\item -> Set.member (UniqueID.toComparable (DiscussionItem.getId item)) toGroup)
+                                |> DiscussionItem.merge
+
+                        updatedItemList =
+                            items
+                                |> List.filter
+                                    (\item ->
+                                        not <|
+                                            Set.member
+                                                (UniqueID.toComparable
+                                                    (DiscussionItem.getId item)
+                                                )
+                                                toGroup
+                                    )
+                    in
                     ( Model user boardId startTime <|
                         GroupingItems
-                            { items = items
+                            { items = newItem :: updatedItemList
                             , toGroup = Set.empty
                             }
                     , Cmd.none
@@ -325,18 +360,27 @@ update now on msg ((Model user boardId startTime state) as model) =
                                 )
                                 items
                             )
+                        <|
+                            Timer.init 2
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
-        Voting details ->
+        Voting details timer ->
             case msg of
+                TimerMsg timerMsg ->
+                    ( Model user boardId startTime <|
+                        Voting details <|
+                            Timer.update timerMsg timer
+                    , Cmd.none
+                    )
+
                 ToggleVote item ->
                     ( Model user boardId startTime <|
-                        Voting <|
-                            List.map
+                        Voting
+                            (List.map
                                 (\detail ->
                                     if detail.item == item then
                                         { detail
@@ -355,6 +399,8 @@ update now on msg ((Model user boardId startTime state) as model) =
                                         detail
                                 )
                                 details
+                            )
+                            timer
                     , Cmd.none
                     )
 
@@ -380,8 +426,26 @@ update now on msg ((Model user boardId startTime state) as model) =
                     ( Model user boardId startTime <|
                         Voting
                             discussionItemsAndVotes
+                        <|
+                            Timer.init 5
                     , Cmd.none
                     )
+
+                TimerMsg timerMsg ->
+                    case currentDiscussion.currentlyDiscussing of
+                        Just ( item, timer ) ->
+                            ( Model user boardId startTime <|
+                                Discussing
+                                    discussionItemsAndVotes
+                                    actions
+                                    { currentDiscussion
+                                        | currentlyDiscussing = Just ( item, Timer.update timerMsg timer )
+                                    }
+                            , Cmd.none
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
 
                 DiscussItem item ->
                     ( Model user boardId startTime <|
@@ -389,7 +453,7 @@ update now on msg ((Model user boardId startTime state) as model) =
                             discussionItemsAndVotes
                             actions
                             { currentDiscussion
-                                | currentlyDiscussing = Just item
+                                | currentlyDiscussing = Just ( item, Timer.init 5 )
                                 , actionField = ""
                                 , assignee = ""
                             }
@@ -443,7 +507,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                                     { description = String.trim actionField
                                     , author = User.getId user
                                     , now = now
-                                    , maybeDiscussionItem = currentlyDiscussing
+                                    , maybeDiscussionItem =
+                                        Maybe.andThen
+                                            (\( item, _ ) ->
+                                                Just item
+                                            )
+                                            currentlyDiscussing
                                     , assignee = assignee
                                     }
                                     :: actions
@@ -522,7 +591,7 @@ boardControls state on =
                         }
                     ]
 
-                AddingDiscussionItems _ items ->
+                AddingDiscussionItems _ items timer ->
                     [ Input.leftIconButton
                         { onPress = on ViewPreviousActions
                         , icon = Icons.back
@@ -544,7 +613,7 @@ boardControls state on =
                         }
                     ]
 
-                GroupingItems { items } ->
+                GroupingItems _ ->
                     [ Input.leftIconButton
                         { onPress = on StartAddingItems
                         , icon = Icons.back
@@ -557,7 +626,7 @@ boardControls state on =
                         }
                     ]
 
-                Voting _ ->
+                Voting _ _ ->
                     [ Input.leftIconButton
                         { onPress = on StartGroupingItems
                         , icon = Icons.back
@@ -610,7 +679,7 @@ view layout on (Model user boardId startTime state) =
                     }
                     previousActions
 
-            AddingDiscussionItems inputs discussionItems ->
+            AddingDiscussionItems inputs discussionItems timer ->
                 AddingItems.view
                     layout
                     { msgs =
@@ -624,12 +693,14 @@ view layout on (Model user boardId startTime state) =
                         , submitStopItem = on <| SubmitField Stop
                         , submitContinueItem = on <| SubmitField Continue
                         , removeItem = on << RemoveDiscussionItem
+                        , onTimerMsg = on << TimerMsg
                         }
                     , values =
                         { startField = inputs.start
                         , stopField = inputs.stop
                         , continueField = inputs.continue
                         }
+                    , timer = timer
                     }
                     discussionItems
 
@@ -643,11 +714,14 @@ view layout on (Model user boardId startTime state) =
                     }
                     items
 
-            Voting items ->
+            Voting items timer ->
                 Voting.view
                     layout
                     user
-                    (on << ToggleVote)
+                    timer
+                    { toggleVoteMsg = on << ToggleVote
+                    , onTimerMsg = on << TimerMsg
+                    }
                     items
 
             Discussing itemsAndVotes actions { currentlyDiscussing, actionField, discussed, assignee } ->
@@ -662,6 +736,7 @@ view layout on (Model user boardId startTime state) =
                     , discussed = discussed
                     , currentlyDiscussing = currentlyDiscussing
                     , assignee = assignee
+                    , onTimerMsg = on << TimerMsg
                     }
                     itemsAndVotes
                     actions
@@ -672,3 +747,24 @@ view layout on (Model user boardId startTime state) =
 init : User -> String -> Time.Posix -> Model
 init user boardId now =
     Model user boardId now Loading
+
+
+subscriptions : (Msg -> msg) -> Model -> Sub msg
+subscriptions on (Model _ _ _ state) =
+    case state of
+        AddingDiscussionItems _ _ timer ->
+            Timer.subscriptions (on << TimerMsg) timer
+
+        Voting _ timer ->
+            Timer.subscriptions (on << TimerMsg) timer
+
+        Discussing _ _ { currentlyDiscussing } ->
+            case currentlyDiscussing of
+                Just ( _, timer ) ->
+                    Timer.subscriptions (on << TimerMsg) timer
+
+                Nothing ->
+                    Sub.none
+
+        _ ->
+            Sub.none

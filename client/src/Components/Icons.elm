@@ -250,3 +250,33 @@ action : Element msg
 action =
     html <|
         Icons.task smallIconSize IconTypes.Inherit
+
+
+timer : Element msg
+timer =
+    html <|
+        Icons.schedule smallIconSize IconTypes.Inherit
+
+
+moreTime : Element msg
+moreTime =
+    html <|
+        Icons.more_time smallIconSize IconTypes.Inherit
+
+
+startTimer : Element msg
+startTimer =
+    html <|
+        Icons.play_arrow smallIconSize IconTypes.Inherit
+
+
+pauseTimer : Element msg
+pauseTimer =
+    html <|
+        Icons.pause smallIconSize IconTypes.Inherit
+
+
+addTime : Element msg
+addTime =
+    html <|
+        Icons.add_alarm smallIconSize IconTypes.Inherit

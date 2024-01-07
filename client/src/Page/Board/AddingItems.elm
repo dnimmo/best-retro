@@ -3,6 +3,7 @@ module Page.Board.AddingItems exposing (view)
 import Components.Input as Input
 import Components.Label as Label
 import Components.Layout as Layout exposing (Layout)
+import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
 import Element.Font as Font
@@ -53,23 +54,26 @@ type alias Params msg =
         , submitStopItem : msg
         , submitContinueItem : msg
         , removeItem : DiscussionItem -> msg
+        , onTimerMsg : Timer.Msg -> msg
         }
     , values :
         { startField : String
         , stopField : String
         , continueField : String
         }
+    , timer : Timer.Model
     }
 
 
 view : Layout -> Params msg -> List DiscussionItem -> Element msg
-view layout { msgs, values } discussionItems =
+view layout { msgs, values, timer } discussionItems =
     column
         [ width fill
         , height fill
         , Layout.commonColumnSpacing
         ]
-        [ Layout.containingElement layout
+        [ Timer.view msgs.onTimerMsg timer
+        , Layout.containingElement layout
             [ Layout.extraColumnSpacing
             , width fill
             ]

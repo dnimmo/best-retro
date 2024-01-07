@@ -306,9 +306,16 @@ subscriptions { state } =
     Sub.batch
         [ User.userLoaded UserLoaded
         , Browser.Events.onResize (\width _ -> ViewportResized width)
-        , case state of
+        , -- TODO: Decide whether this one is even important any more
+          case state of
             ViewingBoard _ _ ->
                 Time.every 1000 Tick
+
+            _ ->
+                Sub.none
+        , case state of
+            ViewingBoard _ boardModel ->
+                Board.subscriptions BoardMsg boardModel
 
             _ ->
                 Sub.none

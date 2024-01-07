@@ -13,6 +13,7 @@ module DiscussionItem exposing
     , isContinue
     , isStart
     , isStop
+    , merge
     )
 
 import Components.Label as Label
@@ -91,7 +92,7 @@ getLabel (DiscussionItem { type_ }) =
 
 
 type alias CreateItemParams =
-    { authorID : String
+    { authorID : String -- TODO - make this a UniqueID
     , content : String
     , timestamp : Time.Posix
     }
@@ -121,6 +122,32 @@ createStopItem =
 createContinueItem : CreateItemParams -> DiscussionItem
 createContinueItem =
     createItem Continue
+
+
+mergeTwo : DiscussionItem -> DiscussionItem -> DiscussionItem
+mergeTwo (DiscussionItem item1) (DiscussionItem item2) =
+    DiscussionItem
+        { item2
+            | content =
+                item1.content
+                    ++ " & "
+                    ++ item2.content
+        }
+
+
+merge : List DiscussionItem -> DiscussionItem
+merge items =
+    List.foldl
+        (\a b ->
+            mergeTwo a b
+        )
+        (createStartItem
+            { authorID = "John Doe"
+            , content = ""
+            , timestamp = Time.millisToPosix 0
+            }
+        )
+        items
 
 
 

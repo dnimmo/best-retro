@@ -2,6 +2,7 @@ module Page.Board.Voting exposing (view)
 
 import Components.Label as Label
 import Components.Layout as Layout exposing (Layout)
+import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
 import Page.Board.Shared as Shared
@@ -43,6 +44,16 @@ stopItems =
         )
 
 
+continueItems :
+    List
+        { item : DiscussionItem
+        , votes : Set String
+        }
+    ->
+        List
+            { item : DiscussionItem
+            , votes : Set String
+            }
 continueItems =
     List.filter
         (\{ item } ->
@@ -53,24 +64,29 @@ continueItems =
 view :
     Layout
     -> User
-    -> (DiscussionItem -> msg)
+    -> Timer.Model
+    ->
+        { toggleVoteMsg : DiscussionItem -> msg
+        , onTimerMsg : Timer.Msg -> msg
+        }
     ->
         List
             { item : DiscussionItem
             , votes : Set String
             }
     -> Element msg
-view layout user toggleVoteMsg discussionItems =
+view layout user timer msgs discussionItems =
     let
         votingCard =
-            Shared.votingItemCard (User.getId user) toggleVoteMsg
+            Shared.votingItemCard (User.getId user) msgs.toggleVoteMsg
     in
     column
         [ width fill
         , height fill
         , Layout.commonColumnSpacing
         ]
-        [ Layout.containingElement layout
+        [ Timer.view msgs.onTimerMsg timer
+        , Layout.containingElement layout
             [ Layout.extraColumnSpacing
             , width fill
             ]

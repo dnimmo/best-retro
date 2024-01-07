@@ -1,5 +1,6 @@
 module Components.Input exposing
     ( addButton
+    , addTimeButton
     , cancelButton
     , checkbox
     , combineButton
@@ -11,11 +12,13 @@ module Components.Input exposing
     , form
     , inputFieldWithInsetButton
     , leftIconButton
+    , pauseButton
     , plainText
     , primaryActionButton
     , removeButton
     , rightIconButton
     , secondaryActionButton
+    , startButton
     , startDiscussion
     , textField
     , upvoteButton
@@ -316,6 +319,9 @@ type ControlType
     | Downvote
     | Discuss
     | Complete
+    | Start
+    | Pause
+    | AddTime
 
 
 controlButtonStyles : ControlType -> List (Element.Attribute msg)
@@ -325,41 +331,122 @@ controlButtonStyles controlType =
             GoBack ->
                 Colours.skyBlue
 
+            Start ->
+                Colours.mediumBlue
+
+            Pause ->
+                Colours.mediumBlue
+
+            AddTime ->
+                Colours.mediumBlue
+
             _ ->
                 Colours.white
-    , Font.color Colours.mediumBlue
+    , Font.color <|
+        case controlType of
+            Start ->
+                Colours.white
+
+            Pause ->
+                Colours.white
+
+            AddTime ->
+                Colours.white
+
+            _ ->
+                Colours.mediumBlue
     , height fill
     , paddingXY 10 <|
         case controlType of
             Add ->
                 0
 
+            Start ->
+                0
+
+            Pause ->
+                0
+
+            AddTime ->
+                0
+
             _ ->
                 10
-    , Border.color Colours.grey
+    , Border.color <|
+        case controlType of
+            Start ->
+                Colours.darkBlue
+
+            Pause ->
+                Colours.darkBlue
+
+            AddTime ->
+                Colours.darkBlue
+
+            _ ->
+                Colours.grey
     , Border.widthEach
-        { edges
-            | top =
-                case controlType of
-                    Add ->
-                        1
+        { top =
+            case controlType of
+                Add ->
+                    1
 
-                    _ ->
-                        0
-            , bottom =
-                case controlType of
-                    Add ->
-                        1
+                Start ->
+                    1
 
-                    _ ->
-                        0
-            , right =
-                case controlType of
-                    Add ->
-                        1
+                Pause ->
+                    1
 
-                    _ ->
-                        0
+                AddTime ->
+                    1
+
+                _ ->
+                    0
+        , bottom =
+            case controlType of
+                Add ->
+                    1
+
+                Start ->
+                    1
+
+                Pause ->
+                    1
+
+                AddTime ->
+                    1
+
+                _ ->
+                    0
+        , right =
+            case controlType of
+                Add ->
+                    1
+
+                Start ->
+                    1
+
+                Pause ->
+                    1
+
+                AddTime ->
+                    1
+
+                _ ->
+                    0
+        , left =
+            case controlType of
+                Start ->
+                    1
+
+                Pause ->
+                    1
+
+                AddTime ->
+                    1
+
+                _ ->
+                    0
         }
     , Border.roundEach
         { topRight = 5
@@ -438,6 +525,15 @@ controlButton controlType msg =
 
                     Complete ->
                         Icons.completedLarge
+
+                    Start ->
+                        Icons.startTimer
+
+                    Pause ->
+                        Icons.pauseTimer
+
+                    AddTime ->
+                        Icons.addTime
         , onPress = Just msg
         }
 
@@ -455,6 +551,11 @@ removeButton =
 editButton : msg -> Element msg
 editButton =
     controlButton Edit
+
+
+startButton : msg -> Element msg
+startButton =
+    controlButton Start
 
 
 checkbox : Bool -> (Bool -> msg) -> Element msg
@@ -482,28 +583,38 @@ combineButton numberToCombine combineMsg =
 
 
 upvoteButton : msg -> Element msg
-upvoteButton msg =
-    controlButton Upvote msg
+upvoteButton =
+    controlButton Upvote
 
 
 downvoteButton : msg -> Element msg
-downvoteButton msg =
-    controlButton Downvote msg
+downvoteButton =
+    controlButton Downvote
 
 
 startDiscussion : msg -> Element msg
-startDiscussion msg =
-    buttonContainer <| controlButton Discuss msg
+startDiscussion =
+    buttonContainer << controlButton Discuss
 
 
 cancelButton : msg -> Element msg
-cancelButton msg =
-    controlButton GoBack msg
+cancelButton =
+    controlButton GoBack
 
 
 completeButton : msg -> Element msg
-completeButton msg =
-    controlButton Complete msg
+completeButton =
+    controlButton Complete
+
+
+pauseButton : msg -> Element msg
+pauseButton =
+    controlButton Pause
+
+
+addTimeButton : msg -> Element msg
+addTimeButton =
+    controlButton AddTime
 
 
 buttonContainer : Element msg -> Element msg
