@@ -4,6 +4,7 @@ import ActionItem exposing (ActionItem)
 import Components.Card as Card
 import Components.Layout as Layout exposing (Layout)
 import Element exposing (..)
+import Team exposing (Team)
 
 
 type alias RequiredMessages msg =
@@ -13,8 +14,8 @@ type alias RequiredMessages msg =
     }
 
 
-view : Layout -> RequiredMessages msg -> List ActionItem -> Element msg
-view layout { markActionAsComplete, markActionAsNotStarted, markActionAsInProgress } actions =
+view : Layout -> Team -> RequiredMessages msg -> List ActionItem -> Element msg
+view layout team { markActionAsComplete, markActionAsNotStarted, markActionAsInProgress } actions =
     column
         [ width fill
         , height fill
@@ -23,8 +24,8 @@ view layout { markActionAsComplete, markActionAsNotStarted, markActionAsInProgre
         [ paragraph []
             [ el [] <|
                 text <|
-                    "Discussing previous actions for "
-                        ++ "TODO: Get team name"
+                    Team.getName team
+                        ++ "'s open actions"
             ]
         , wrappedRow
             [ Layout.commonColumnSpacing

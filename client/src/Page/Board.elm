@@ -37,7 +37,7 @@ type alias BoardID =
 
 
 type Model
-    = Model User BoardID Time.Posix State
+    = Model User Team BoardID Time.Posix State
 
 
 type State
@@ -140,7 +140,7 @@ type Msg
 
 
 update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update now on msg ((Model user boardId startTime state) as model) =
+update now on msg ((Model user team boardId startTime state) as model) =
     let
         userId =
             User.getId user
@@ -152,7 +152,9 @@ update now on msg ((Model user boardId startTime state) as model) =
         Loading ->
             case msg of
                 SimulateLoading ->
-                    ( Model user
+                    ( Model
+                        user
+                        team
                         boardId
                         startTime
                         (ReadyToStart { facilitator = user }
@@ -167,7 +169,12 @@ update now on msg ((Model user boardId startTime state) as model) =
         ReadyToStart _ ->
             case msg of
                 ViewPreviousActions ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         DiscussingPreviousActions
                             { facilitator = user
                             , actions = ActionItem.notCompletedBefore startTime ActionItem.devActionItems
@@ -181,12 +188,23 @@ update now on msg ((Model user boardId startTime state) as model) =
         DiscussingPreviousActions data ->
             case msg of
                 BackToStart ->
-                    ( Model user boardId startTime <| ReadyToStart { facilitator = user }
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
+                        ReadyToStart { facilitator = user }
                     , Cmd.none
                     )
 
                 MarkActionAsNotStarted actionItem ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         DiscussingPreviousActions
                             { data
                                 | actions =
@@ -196,7 +214,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 MarkActionAsStarted actionItem ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         DiscussingPreviousActions
                             { data
                                 | actions =
@@ -206,7 +229,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 MarkActionAsComplete actionItem ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         DiscussingPreviousActions
                             { data
                                 | actions =
@@ -216,7 +244,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 StartAddingItems ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { inputs = defaultAddingItemsInputs
                             , items = []
@@ -236,7 +269,12 @@ update now on msg ((Model user boardId startTime state) as model) =
             in
             case msg of
                 TimerMsg timerMsg ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { data
                                 | timer =
@@ -246,7 +284,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 UpdateField field str ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { data
                                 | inputs =
@@ -270,7 +313,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 SubmitField field ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { data
                                 | inputs =
@@ -319,7 +367,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 RemoveDiscussionItem item ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { data
                                 | items =
@@ -330,7 +383,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 StartGroupingItems ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         GroupingItems
                             { facilitator = user
                             , items = data.items
@@ -340,7 +398,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 PopulateDummyItems ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         AddingDiscussionItems
                             { data
                                 | items =
@@ -351,7 +414,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 ViewPreviousActions ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         DiscussingPreviousActions
                             { facilitator = user
                             , actions =
@@ -361,7 +429,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 BackToStart ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         ReadyToStart { facilitator = user }
                     , Cmd.none
                     )
@@ -376,7 +449,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                         comparableId =
                             UniqueID.toComparable id
                     in
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         GroupingItems
                             { facilitator = user
                             , items = items
@@ -419,7 +497,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                                                         toGroup
                                             )
                             in
-                            ( Model user boardId startTime <|
+                            ( Model
+                                user
+                                team
+                                boardId
+                                startTime
+                              <|
                                 GroupingItems
                                     { facilitator = user
                                     , items = newItem :: updatedItemList
@@ -432,7 +515,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                             ( model, Cmd.none )
 
                 MoveToVoting ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Voting
                             { facilitator = user
                             , items =
@@ -454,7 +542,12 @@ update now on msg ((Model user boardId startTime state) as model) =
         Voting data ->
             case msg of
                 TimerMsg timerMsg ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Voting
                             { data
                                 | timer =
@@ -464,7 +557,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 ToggleVote item ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Voting
                             { data
                                 | items =
@@ -492,7 +590,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 StartDiscussing ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { facilitator = user
                             , items = data.items
@@ -509,7 +612,12 @@ update now on msg ((Model user boardId startTime state) as model) =
         Discussing data ->
             case msg of
                 MoveToVoting ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Voting
                             { facilitator = user
                             , items = data.items
@@ -521,7 +629,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                 TimerMsg timerMsg ->
                     case data.currentDiscussion of
                         Just details ->
-                            ( Model user boardId startTime <|
+                            ( Model
+                                user
+                                team
+                                boardId
+                                startTime
+                              <|
                                 Discussing
                                     { data
                                         | currentDiscussion =
@@ -537,7 +650,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                             ( model, Cmd.none )
 
                 DiscussItem item ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | currentDiscussion =
@@ -552,7 +670,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 CancelDiscussion ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | currentDiscussion = Nothing
@@ -561,7 +684,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 UpdateActionField str ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | currentDiscussion =
@@ -577,7 +705,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 UpdateAssigneeField str ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | currentDiscussion =
@@ -593,7 +726,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 SubmitAction ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | currentDiscussion =
@@ -628,7 +766,12 @@ update now on msg ((Model user boardId startTime state) as model) =
                     )
 
                 FinishDiscussingItem item ->
-                    ( Model user boardId startTime <|
+                    ( Model
+                        user
+                        team
+                        boardId
+                        startTime
+                      <|
                         Discussing
                             { data
                                 | discussed = item :: data.discussed
@@ -765,7 +908,7 @@ addFacilitatorControls loggedInUser state on =
 
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
-view layout on (Model user boardId startTime state) =
+view layout on (Model user team boardId startTime state) =
     column
         [ width fill
         , height fill
@@ -783,6 +926,7 @@ view layout on (Model user boardId startTime state) =
             DiscussingPreviousActions { actions } ->
                 PreviousActions.view
                     layout
+                    team
                     { markActionAsNotStarted = on << MarkActionAsNotStarted
                     , markActionAsInProgress = on << MarkActionAsStarted
                     , markActionAsComplete = on << MarkActionAsComplete
@@ -871,11 +1015,11 @@ view layout on (Model user boardId startTime state) =
 
 init : User -> Team -> String -> Time.Posix -> Model
 init user team boardId now =
-    Model user boardId now Loading
+    Model user team boardId now Loading
 
 
 subscriptions : (Msg -> msg) -> Model -> Sub msg
-subscriptions on (Model _ _ _ state) =
+subscriptions on (Model _ _ _ _ state) =
     case state of
         AddingDiscussionItems { timer } ->
             Timer.subscriptions (on << TimerMsg) timer
