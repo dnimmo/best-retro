@@ -5,6 +5,7 @@ module Team exposing
     , getMemberIds
     , getName
     , getTeam
+    , testTeam
     , toRoute
     , userIsAdmin
     )
@@ -81,19 +82,30 @@ createTeam time name userId =
 -- Everything below here is just for testing
 
 
-teams : List Team
-teams =
-    [ Team
+testTeam : Team
+testTeam =
+    Team
         { name = "Team 1"
-        , members = [ UniqueID.generateDefaultID ]
+        , members =
+            [ UniqueID.generateID <|
+                Time.millisToPosix 0
+            ]
         , description = "The first test team"
         , id = UniqueID.generateDefaultID
         , creator = UniqueID.generateDefaultID
         , admins = [ UniqueID.generateDefaultID ]
         }
+
+
+teams : List Team
+teams =
+    [ testTeam
     , Team
         { name = "Team 2"
-        , members = [ UniqueID.generateDefaultID ]
+        , members =
+            [ UniqueID.generateID <|
+                Time.millisToPosix 0
+            ]
         , description = "The second test team"
         , id = UniqueID.generateDefaultID
         , creator = UniqueID.generateDefaultID

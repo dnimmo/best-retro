@@ -19,6 +19,7 @@ import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Team exposing (Team)
+import Time
 import UniqueID exposing (UniqueID)
 
 
@@ -118,7 +119,9 @@ attemptToLogIn _ responseMsg =
 testUser : User
 testUser =
     User
-        { id = UniqueID.generateDefaultID
+        { id =
+            UniqueID.generateID <|
+                Time.millisToPosix 0
         , name = "John Doe"
         , email = "dnimmo@gmail.com"
         , teams = [ UniqueID.generateDefaultID ]

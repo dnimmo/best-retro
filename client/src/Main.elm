@@ -18,8 +18,9 @@ import Page.Home as Home
 import Page.Loading as Loading
 import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
-import Page.Team as Team
+import Page.Team as TeamPage
 import Route
+import Team exposing (testTeam)
 import Time
 import Url exposing (Url)
 import User exposing (User)
@@ -47,7 +48,7 @@ type State
     | ViewingDashboard User Dashboard.Model
     | ViewingMyTeams User MyTeams.Model
     | ViewingCreateTeam User CreateTeam.Model
-    | ViewingTeam User Team.Model
+    | ViewingTeam User TeamPage.Model
     | ViewingBoard User Board.Model
     | ViewingError String
 
@@ -67,7 +68,7 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
-    | TeamMsg Team.Msg
+    | TeamMsg TeamPage.Msg
     | BoardMsg Board.Msg
     | UserLoaded Decode.Value
 
@@ -109,11 +110,11 @@ urlChange url model =
 
                         Just (Route.Team teamId) ->
                             ViewingTeam user <|
-                                Team.init teamId
+                                TeamPage.init teamId
 
                         Just (Route.Board boardId) ->
                             ViewingBoard user <|
-                                Board.init user boardId model.now
+                                Board.init user Team.testTeam boardId model.now
 
                         _ ->
                             -- TODO: Maybe show some error in this situation
@@ -293,7 +294,7 @@ view model =
                     Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
 
                 ViewingTeam _ teamModel ->
-                    Layout.withHeader (Route.Team "") <| Team.view TeamMsg teamModel
+                    Layout.withHeader (Route.Team "") <| TeamPage.view TeamMsg teamModel
 
                 ViewingBoard _ boardModel ->
                     Layout.withHeader (Route.Board "") <| Board.view model.layout BoardMsg boardModel

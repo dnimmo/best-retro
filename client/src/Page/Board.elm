@@ -22,6 +22,7 @@ import Page.Board.Loading as Loading
 import Page.Board.Voting as Voting
 import Route
 import Set exposing (Set)
+import Team exposing (Team)
 import Time
 import UniqueID exposing (UniqueID)
 import User exposing (User)
@@ -41,31 +42,48 @@ type Model
 
 type State
     = Loading
-    | ReadyToStart
-    | DiscussingPreviousActions (List ActionItem)
-    | AddingDiscussionItems AddingItemsInputs (List DiscussionItem) Timer.Model
+    | ReadyToStart { facilitator : User }
+    | DiscussingPreviousActions
+        { facilitator : User
+        , actions : List ActionItem
+        }
+    | AddingDiscussionItems
+        { facilitator : User
+        , inputs : AddingItemsInputs
+        , items : List DiscussionItem
+        , timer : Timer.Model
+        }
     | GroupingItems
-        { items : List DiscussionItem
+        { facilitator : User
+        , items : List DiscussionItem
         , toGroup : Set String
         }
     | Voting
-        (List
-            { item : DiscussionItem
-            , votes : Set String
-            }
-        )
-        Timer.Model
+        { facilitator : User
+        , items :
+            List
+                { item : DiscussionItem
+                , votes : Set String
+                }
+        , timer : Timer.Model
+        }
     | Discussing
-        (List
-            { item : DiscussionItem
-            , votes : Set String
-            }
-        )
-        (List ActionItem)
-        { currentlyDiscussing : Maybe ( DiscussionItem, Timer.Model )
-        , actionField : String
-        , assignee : String
+        { facilitator : User
+        , items :
+            List
+                { item : DiscussionItem
+                , votes : Set String
+                }
+        , actions :
+            List ActionItem
         , discussed : List DiscussionItem
+        , currentDiscussion :
+            Maybe
+                { item : DiscussionItem
+                , timer : Timer.Model
+                , actionField : String
+                , assignee : String
+                }
         }
 
 
@@ -134,178 +152,217 @@ update now on msg ((Model user boardId startTime state) as model) =
         Loading ->
             case msg of
                 SimulateLoading ->
-                    ( Model user boardId startTime ReadyToStart, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        ReadyToStart ->
-            case msg of
-                ViewPreviousActions ->
-                    ( Model user boardId startTime <|
-                        DiscussingPreviousActions <|
-                            ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                    ( Model user
+                        boardId
+                        startTime
+                        (ReadyToStart { facilitator = user }
+                         -- TODO load the facilitator from the server
+                        )
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
-        DiscussingPreviousActions actionItems ->
+        ReadyToStart _ ->
+            case msg of
+                ViewPreviousActions ->
+                    ( Model user boardId startTime <|
+                        DiscussingPreviousActions
+                            { facilitator = user
+                            , actions = ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                            }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        DiscussingPreviousActions data ->
             case msg of
                 BackToStart ->
-                    ( Model user boardId startTime ReadyToStart
+                    ( Model user boardId startTime <| ReadyToStart { facilitator = user }
                     , Cmd.none
                     )
 
                 MarkActionAsNotStarted actionItem ->
                     ( Model user boardId startTime <|
-                        DiscussingPreviousActions <|
-                            ActionItem.setToDo (ActionItem.getId actionItem) actionItems
+                        DiscussingPreviousActions
+                            { data
+                                | actions =
+                                    ActionItem.setToDo (ActionItem.getId actionItem) data.actions
+                            }
                     , Cmd.none
                     )
 
                 MarkActionAsStarted actionItem ->
                     ( Model user boardId startTime <|
-                        DiscussingPreviousActions <|
-                            ActionItem.setInProgress (ActionItem.getId actionItem) actionItems
+                        DiscussingPreviousActions
+                            { data
+                                | actions =
+                                    ActionItem.setInProgress (ActionItem.getId actionItem) data.actions
+                            }
                     , Cmd.none
                     )
 
                 MarkActionAsComplete actionItem ->
                     ( Model user boardId startTime <|
-                        DiscussingPreviousActions <|
-                            ActionItem.setComplete (ActionItem.getId actionItem) actionItems
+                        DiscussingPreviousActions
+                            { data
+                                | actions =
+                                    ActionItem.setComplete (ActionItem.getId actionItem) data.actions
+                            }
                     , Cmd.none
                     )
 
                 StartAddingItems ->
                     ( Model user boardId startTime <|
                         AddingDiscussionItems
-                            defaultAddingItemsInputs
-                            []
-                        <|
-                            Timer.init 5
+                            { inputs = defaultAddingItemsInputs
+                            , items = []
+                            , timer = Timer.init 5
+                            , facilitator = user
+                            }
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
-        AddingDiscussionItems inputs discussionItems timer ->
+        AddingDiscussionItems data ->
+            let
+                inputs =
+                    data.inputs
+            in
             case msg of
                 TimerMsg timerMsg ->
                     ( Model user boardId startTime <|
-                        AddingDiscussionItems inputs discussionItems <|
-                            Timer.update timerMsg timer
+                        AddingDiscussionItems
+                            { data
+                                | timer =
+                                    Timer.update timerMsg data.timer
+                            }
                     , Cmd.none
                     )
 
                 UpdateField field str ->
                     ( Model user boardId startTime <|
                         AddingDiscussionItems
-                            (case field of
-                                Start ->
-                                    { inputs
-                                        | start = str
-                                    }
+                            { data
+                                | inputs =
+                                    case field of
+                                        Start ->
+                                            { inputs
+                                                | start = str
+                                            }
 
-                                Stop ->
-                                    { inputs
-                                        | stop = str
-                                    }
+                                        Stop ->
+                                            { inputs
+                                                | stop = str
+                                            }
 
-                                Continue ->
-                                    { inputs
-                                        | continue = str
-                                    }
-                            )
-                            discussionItems
-                            timer
+                                        Continue ->
+                                            { inputs
+                                                | continue = str
+                                            }
+                            }
                     , Cmd.none
                     )
 
                 SubmitField field ->
                     ( Model user boardId startTime <|
                         AddingDiscussionItems
-                            (case field of
-                                Start ->
-                                    { inputs
-                                        | start = ""
-                                    }
+                            { data
+                                | inputs =
+                                    case field of
+                                        Start ->
+                                            { inputs
+                                                | start = ""
+                                            }
 
-                                Stop ->
-                                    { inputs
-                                        | stop = ""
-                                    }
+                                        Stop ->
+                                            { inputs
+                                                | stop = ""
+                                            }
 
-                                Continue ->
-                                    { inputs
-                                        | continue = ""
-                                    }
-                            )
-                            ((case field of
-                                Start ->
-                                    DiscussionItem.createStartItem
-                                        { authorID = "TODO - User ID here"
-                                        , content = inputs.start
-                                        , timestamp = now
-                                        }
+                                        Continue ->
+                                            { inputs
+                                                | continue = ""
+                                            }
+                                , items =
+                                    (case field of
+                                        Start ->
+                                            DiscussionItem.createStartItem
+                                                { authorID = "TODO - User ID here"
+                                                , content = inputs.start
+                                                , timestamp = now
+                                                }
 
-                                Stop ->
-                                    DiscussionItem.createStopItem
-                                        { authorID = "TODO - User ID here"
-                                        , content = inputs.stop
-                                        , timestamp = now
-                                        }
+                                        Stop ->
+                                            DiscussionItem.createStopItem
+                                                { authorID = "TODO - User ID here"
+                                                , content = inputs.stop
+                                                , timestamp = now
+                                                }
 
-                                Continue ->
-                                    DiscussionItem.createContinueItem
-                                        { authorID = "TODO - User ID here"
-                                        , content = inputs.continue
-                                        , timestamp = now
-                                        }
-                             )
-                                :: discussionItems
-                            )
-                            timer
+                                        Continue ->
+                                            DiscussionItem.createContinueItem
+                                                { authorID = "TODO - User ID here"
+                                                , content = inputs.continue
+                                                , timestamp = now
+                                                }
+                                    )
+                                        :: data.items
+                            }
                     , Cmd.none
                       -- TODO send new item to server
                     )
 
                 RemoveDiscussionItem item ->
                     ( Model user boardId startTime <|
-                        AddingDiscussionItems inputs
-                            (discussionItems
-                                |> List.filter (\i -> item /= i)
-                            )
-                            timer
+                        AddingDiscussionItems
+                            { data
+                                | items =
+                                    data.items
+                                        |> List.filter (\i -> item /= i)
+                            }
                     , Cmd.none
                     )
 
                 StartGroupingItems ->
                     ( Model user boardId startTime <|
                         GroupingItems
-                            { items = discussionItems
+                            { facilitator = user
+                            , items = data.items
                             , toGroup = Set.empty
                             }
                     , Cmd.none
                     )
 
                 PopulateDummyItems ->
-                    ( Model user boardId startTime <| AddingDiscussionItems inputs DiscussionItem.devDiscussionItems timer
+                    ( Model user boardId startTime <|
+                        AddingDiscussionItems
+                            { data
+                                | items =
+                                    data.items
+                                        ++ DiscussionItem.devDiscussionItems
+                            }
                     , Cmd.none
                     )
 
                 ViewPreviousActions ->
                     ( Model user boardId startTime <|
-                        DiscussingPreviousActions <|
-                            ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                        DiscussingPreviousActions
+                            { facilitator = user
+                            , actions =
+                                ActionItem.notCompletedBefore startTime ActionItem.devActionItems
+                            }
                     , Cmd.none
                     )
 
                 BackToStart ->
-                    ( Model user boardId startTime ReadyToStart
+                    ( Model user boardId startTime <|
+                        ReadyToStart { facilitator = user }
                     , Cmd.none
                     )
 
@@ -321,7 +378,8 @@ update now on msg ((Model user boardId startTime state) as model) =
                     in
                     ( Model user boardId startTime <|
                         GroupingItems
-                            { items = items
+                            { facilitator = user
+                            , items = items
                             , toGroup =
                                 if Set.member comparableId toGroup then
                                     Set.remove comparableId toGroup
@@ -363,7 +421,8 @@ update now on msg ((Model user boardId startTime state) as model) =
                             in
                             ( Model user boardId startTime <|
                                 GroupingItems
-                                    { items = newItem :: updatedItemList
+                                    { facilitator = user
+                                    , items = newItem :: updatedItemList
                                     , toGroup = Set.empty
                                     }
                             , Cmd.none
@@ -375,66 +434,70 @@ update now on msg ((Model user boardId startTime state) as model) =
                 MoveToVoting ->
                     ( Model user boardId startTime <|
                         Voting
-                            (List.map
-                                (\item ->
-                                    { item = item
-                                    , votes = Set.empty
-                                    }
-                                )
+                            { facilitator = user
+                            , items =
                                 items
-                            )
-                        <|
-                            Timer.init 2
+                                    |> List.map
+                                        (\item ->
+                                            { item = item
+                                            , votes = Set.empty
+                                            }
+                                        )
+                            , timer = Timer.init 2
+                            }
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
-        Voting details timer ->
+        Voting data ->
             case msg of
                 TimerMsg timerMsg ->
                     ( Model user boardId startTime <|
-                        Voting details <|
-                            Timer.update timerMsg timer
+                        Voting
+                            { data
+                                | timer =
+                                    Timer.update timerMsg data.timer
+                            }
                     , Cmd.none
                     )
 
                 ToggleVote item ->
                     ( Model user boardId startTime <|
                         Voting
-                            (List.map
-                                (\detail ->
-                                    if detail.item == item then
-                                        { detail
-                                            | votes =
-                                                (if Set.member comparableUserId detail.votes then
-                                                    Set.remove
+                            { data
+                                | items =
+                                    data.items
+                                        |> List.map
+                                            (\detail ->
+                                                if detail.item == item then
+                                                    { detail
+                                                        | votes =
+                                                            (if Set.member comparableUserId detail.votes then
+                                                                Set.remove
 
-                                                 else
-                                                    Set.insert
-                                                )
-                                                    comparableUserId
-                                                    detail.votes
-                                        }
+                                                             else
+                                                                Set.insert
+                                                            )
+                                                                comparableUserId
+                                                                detail.votes
+                                                    }
 
-                                    else
-                                        detail
-                                )
-                                details
-                            )
-                            timer
+                                                else
+                                                    detail
+                                            )
+                            }
                     , Cmd.none
                     )
 
                 StartDiscussing ->
                     ( Model user boardId startTime <|
                         Discussing
-                            details
-                            []
-                            { currentlyDiscussing = Nothing
-                            , actionField = ""
-                            , assignee = ""
+                            { facilitator = user
+                            , items = data.items
+                            , currentDiscussion = Nothing
+                            , actions = []
                             , discussed = []
                             }
                     , Cmd.none
@@ -443,26 +506,29 @@ update now on msg ((Model user boardId startTime state) as model) =
                 _ ->
                     ( model, Cmd.none )
 
-        Discussing discussionItemsAndVotes actions ({ currentlyDiscussing, actionField, assignee, discussed } as currentDiscussion) ->
+        Discussing data ->
             case msg of
                 MoveToVoting ->
                     ( Model user boardId startTime <|
                         Voting
-                            discussionItemsAndVotes
-                        <|
-                            Timer.init 5
+                            { facilitator = user
+                            , items = data.items
+                            , timer = Timer.init 5
+                            }
                     , Cmd.none
                     )
 
                 TimerMsg timerMsg ->
-                    case currentDiscussion.currentlyDiscussing of
-                        Just ( item, timer ) ->
+                    case data.currentDiscussion of
+                        Just details ->
                             ( Model user boardId startTime <|
                                 Discussing
-                                    discussionItemsAndVotes
-                                    actions
-                                    { currentDiscussion
-                                        | currentlyDiscussing = Just ( item, Timer.update timerMsg timer )
+                                    { data
+                                        | currentDiscussion =
+                                            Just
+                                                { details
+                                                    | timer = Timer.update timerMsg details.timer
+                                                }
                                     }
                             , Cmd.none
                             )
@@ -473,12 +539,14 @@ update now on msg ((Model user boardId startTime state) as model) =
                 DiscussItem item ->
                     ( Model user boardId startTime <|
                         Discussing
-                            discussionItemsAndVotes
-                            actions
-                            { currentDiscussion
-                                | currentlyDiscussing = Just ( item, Timer.init 5 )
-                                , actionField = ""
-                                , assignee = ""
+                            { data
+                                | currentDiscussion =
+                                    Just
+                                        { item = item
+                                        , timer = Timer.init 5
+                                        , actionField = ""
+                                        , assignee = ""
+                                        }
                             }
                     , Cmd.none
                     )
@@ -486,12 +554,8 @@ update now on msg ((Model user boardId startTime state) as model) =
                 CancelDiscussion ->
                     ( Model user boardId startTime <|
                         Discussing
-                            discussionItemsAndVotes
-                            actions
-                            { currentDiscussion
-                                | currentlyDiscussing = Nothing
-                                , actionField = ""
-                                , assignee = ""
+                            { data
+                                | currentDiscussion = Nothing
                             }
                     , Cmd.none
                     )
@@ -499,10 +563,15 @@ update now on msg ((Model user boardId startTime state) as model) =
                 UpdateActionField str ->
                     ( Model user boardId startTime <|
                         Discussing
-                            discussionItemsAndVotes
-                            actions
-                            { currentDiscussion
-                                | actionField = str
+                            { data
+                                | currentDiscussion =
+                                    Maybe.map
+                                        (\details ->
+                                            { details
+                                                | actionField = str
+                                            }
+                                        )
+                                        data.currentDiscussion
                             }
                     , Cmd.none
                     )
@@ -510,53 +579,60 @@ update now on msg ((Model user boardId startTime state) as model) =
                 UpdateAssigneeField str ->
                     ( Model user boardId startTime <|
                         Discussing
-                            discussionItemsAndVotes
-                            actions
-                            { currentDiscussion
-                                | assignee = str
+                            { data
+                                | currentDiscussion =
+                                    data.currentDiscussion
+                                        |> Maybe.map
+                                            (\details ->
+                                                { details
+                                                    | assignee = str
+                                                }
+                                            )
                             }
                     , Cmd.none
                     )
 
                 SubmitAction ->
-                    if (String.isEmpty <| String.trim actionField) || (String.isEmpty <| String.trim assignee) then
-                        ( model, Cmd.none )
+                    ( Model user boardId startTime <|
+                        Discussing
+                            { data
+                                | currentDiscussion =
+                                    Maybe.map
+                                        (\details ->
+                                            { details
+                                                | actionField = ""
+                                                , assignee = ""
+                                            }
+                                        )
+                                        data.currentDiscussion
+                                , actions =
+                                    case data.currentDiscussion of
+                                        Just { item, actionField, assignee } ->
+                                            if (String.isEmpty <| String.trim actionField) || (String.isEmpty <| String.trim assignee) then
+                                                data.actions
 
-                    else
-                        ( Model user boardId startTime <|
-                            Discussing
-                                discussionItemsAndVotes
-                                (ActionItem.new
-                                    { description = String.trim actionField
-                                    , author = User.getId user
-                                    , now = now
-                                    , maybeDiscussionItem =
-                                        Maybe.andThen
-                                            (\( item, _ ) ->
-                                                Just item
-                                            )
-                                            currentlyDiscussing
-                                    , assignee = assignee
-                                    }
-                                    :: actions
-                                )
-                                { currentDiscussion
-                                    | currentlyDiscussing = currentlyDiscussing
-                                    , actionField = ""
-                                    , assignee = ""
-                                }
-                        , Cmd.none
-                        )
+                                            else
+                                                ActionItem.new
+                                                    { description = String.trim actionField
+                                                    , author = User.getId user
+                                                    , now = now
+                                                    , maybeDiscussionItem = Just item
+                                                    , assignee = assignee
+                                                    }
+                                                    :: data.actions
+
+                                        Nothing ->
+                                            data.actions
+                            }
+                    , Cmd.none
+                    )
 
                 FinishDiscussingItem item ->
                     ( Model user boardId startTime <|
                         Discussing
-                            discussionItemsAndVotes
-                            actions
-                            { currentlyDiscussing = Nothing
-                            , actionField = ""
-                            , assignee = ""
-                            , discussed = item :: discussed
+                            { data
+                                | discussed = item :: data.discussed
+                                , currentDiscussion = Nothing
                             }
                     , Cmd.none
                     )
@@ -569,108 +645,123 @@ update now on msg ((Model user boardId startTime state) as model) =
 -- VIEW
 
 
-boardControls : State -> (Msg -> msg) -> Element msg
-boardControls state on =
-    row
-        [ Border.width 1
-        , width fill
-        , padding 20
-        , Background.color Colours.mediumBlueTransparent
-        , Border.rounded 5
-        , Border.color Colours.darkBlue
-        ]
-        [ Icons.controls
-        , row
-            [ alignRight
-            , commonRowSpacing
-            ]
-            (case state of
-                Loading ->
-                    [ Input.rightIconButton
-                        { onPress = on SimulateLoading
-                        , icon = Icons.startSession
-                        , labelText = "Load"
-                        }
+addFacilitatorControls : User -> State -> (Msg -> msg) -> Element msg
+addFacilitatorControls loggedInUser state on =
+    let
+        common facilitator controls =
+            column
+                [ width fill ]
+                [ row [ Layout.lessRowSpacing ]
+                    [ el [] Icons.facilitator
+                    , el Font.label <| text <| User.getName facilitator
                     ]
-
-                ReadyToStart ->
-                    [ Input.rightIconButton
-                        { onPress = on ViewPreviousActions
-                        , icon = Icons.startSession
-                        , labelText = "Start"
-                        }
+                , row
+                    [ Border.width 1
+                    , width fill
+                    , padding 20
+                    , Background.color Colours.mediumBlueTransparent
+                    , Border.rounded 5
+                    , Border.color Colours.darkBlue
                     ]
+                    [ Icons.controls
+                    , row
+                        [ alignRight
+                        , commonRowSpacing
+                        ]
+                        controls
+                    ]
+                ]
+    in
+    case state of
+        Loading ->
+            Input.rightIconButton
+                { onPress = on SimulateLoading
+                , icon = Icons.startSession
+                , labelText = "Load"
+                }
 
-                DiscussingPreviousActions _ ->
-                    [ Input.leftIconButton
-                        { onPress = on BackToStart
-                        , icon = Icons.back
-                        , labelText = "Back"
-                        }
-                    , Input.rightIconButton
-                        { onPress = on StartAddingItems
+        ReadyToStart { facilitator } ->
+            common facilitator
+                [ Input.rightIconButton
+                    { onPress = on ViewPreviousActions
+                    , icon = Icons.startSession
+                    , labelText = "Start"
+                    }
+                ]
+
+        DiscussingPreviousActions { facilitator } ->
+            common facilitator
+                [ Input.leftIconButton
+                    { onPress = on BackToStart
+                    , icon = Icons.back
+                    , labelText = "Back"
+                    }
+                , Input.rightIconButton
+                    { onPress = on StartAddingItems
+                    , icon = Icons.forward
+                    , labelText = "Add items"
+                    }
+                ]
+
+        AddingDiscussionItems { facilitator, items } ->
+            common facilitator
+                [ Input.leftIconButton
+                    { onPress = on ViewPreviousActions
+                    , icon = Icons.back
+                    , labelText = "Back"
+                    }
+                , if List.isEmpty items then
+                    Input.rightIconButton
+                        { onPress = on PopulateDummyItems
                         , icon = Icons.forward
-                        , labelText = "Add items"
+                        , labelText = "Add dummy items"
                         }
-                    ]
 
-                AddingDiscussionItems _ items timer ->
-                    [ Input.leftIconButton
-                        { onPress = on ViewPreviousActions
-                        , icon = Icons.back
-                        , labelText = "Back"
-                        }
-                    , if List.isEmpty items then
-                        Input.rightIconButton
-                            { onPress = on PopulateDummyItems
-                            , icon = Icons.forward
-                            , labelText = "Add dummy items"
-                            }
+                  else
+                    none
+                , Input.rightIconButton
+                    { onPress = on StartGroupingItems
+                    , icon = Icons.forward
+                    , labelText = "Start grouping"
+                    }
+                ]
 
-                      else
-                        none
-                    , Input.rightIconButton
-                        { onPress = on StartGroupingItems
-                        , icon = Icons.forward
-                        , labelText = "Start grouping"
-                        }
-                    ]
+        GroupingItems { facilitator } ->
+            common facilitator
+                [ Input.leftIconButton
+                    { onPress = on StartAddingItems
+                    , icon = Icons.back
+                    , labelText = "Back"
+                    }
+                , Input.rightIconButton
+                    { onPress = on MoveToVoting
+                    , icon = Icons.forward
+                    , labelText = "Start voting"
+                    }
+                ]
 
-                GroupingItems _ ->
-                    [ Input.leftIconButton
-                        { onPress = on StartAddingItems
-                        , icon = Icons.back
-                        , labelText = "Back"
-                        }
-                    , Input.rightIconButton
-                        { onPress = on MoveToVoting
-                        , icon = Icons.forward
-                        , labelText = "Start voting"
-                        }
-                    ]
+        Voting { facilitator } ->
+            common facilitator
+                [ Input.leftIconButton
+                    { onPress = on StartGroupingItems
+                    , icon = Icons.back
+                    , labelText = "Back"
+                    }
+                , Input.rightIconButton
+                    { onPress = on StartDiscussing
+                    , icon = Icons.forward
+                    , labelText = "Start Discussing"
+                    }
+                ]
 
-                Voting _ _ ->
-                    [ Input.leftIconButton
-                        { onPress = on StartGroupingItems
-                        , icon = Icons.back
-                        , labelText = "Back"
-                        }
-                    , Input.rightIconButton
-                        { onPress = on StartDiscussing
-                        , icon = Icons.forward
-                        , labelText = "Start Discussing"
-                        }
-                    ]
-
-                Discussing _ _ _ ->
-                    [ Input.leftIconButton
-                        { onPress = on MoveToVoting
-                        , icon = Icons.back
-                        , labelText = "Back"
-                        }
-                    ]
-            )
-        ]
+        Discussing { facilitator } ->
+            common facilitator
+                [ Input.leftIconButton
+                    { onPress = on MoveToVoting
+                    , icon = Icons.back
+                    , labelText = "Back"
+                    }
+                ]
 
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
@@ -681,28 +772,24 @@ view layout on (Model user boardId startTime state) =
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ row [ Layout.lessRowSpacing ]
-            [ el [] Icons.facilitator
-            , el Font.label <| text <| "Facilitator: " ++ "TODO: Get user name"
-            ]
-        , boardControls state on -- TODO: Only show these for the facilitator
+        [ addFacilitatorControls user state on
         , case state of
             Loading ->
                 Loading.view
 
-            ReadyToStart ->
+            ReadyToStart _ ->
                 Intro.view
 
-            DiscussingPreviousActions previousActions ->
+            DiscussingPreviousActions { actions } ->
                 PreviousActions.view
                     layout
                     { markActionAsNotStarted = on << MarkActionAsNotStarted
                     , markActionAsInProgress = on << MarkActionAsStarted
                     , markActionAsComplete = on << MarkActionAsComplete
                     }
-                    previousActions
+                    actions
 
-            AddingDiscussionItems inputs discussionItems timer ->
+            AddingDiscussionItems { inputs, items, timer } ->
                 AddingItems.view
                     layout
                     { msgs =
@@ -725,7 +812,7 @@ view layout on (Model user boardId startTime state) =
                         }
                     , timer = timer
                     }
-                    discussionItems
+                    items
 
             GroupingItems { items, toGroup } ->
                 GroupingItems.view
@@ -737,7 +824,7 @@ view layout on (Model user boardId startTime state) =
                     }
                     items
 
-            Voting items timer ->
+            Voting { items, timer } ->
                 Voting.view
                     layout
                     user
@@ -747,7 +834,22 @@ view layout on (Model user boardId startTime state) =
                     }
                     items
 
-            Discussing itemsAndVotes actions { currentlyDiscussing, actionField, discussed, assignee } ->
+            Discussing { items, actions, currentDiscussion, discussed } ->
+                let
+                    { assigneeValue, currentDiscussionItem, actionValue } =
+                        case currentDiscussion of
+                            Just { assignee, item, timer, actionField } ->
+                                { assigneeValue = assignee
+                                , currentDiscussionItem = Just ( item, timer )
+                                , actionValue = actionField
+                                }
+
+                            Nothing ->
+                                { assigneeValue = ""
+                                , currentDiscussionItem = Nothing
+                                , actionValue = ""
+                                }
+                in
                 Discussing.view layout
                     { startDiscussion = on << DiscussItem
                     , updateActionField = on << UpdateActionField
@@ -755,35 +857,35 @@ view layout on (Model user boardId startTime state) =
                     , finishDiscussingItem = on << FinishDiscussingItem
                     , submitAction = on SubmitAction
                     , cancelDiscussion = on CancelDiscussion
-                    , actionField = actionField
+                    , actionField = actionValue
                     , discussed = discussed
-                    , currentlyDiscussing = currentlyDiscussing
-                    , assignee = assignee
+                    , currentlyDiscussing = currentDiscussionItem
+                    , assignee = assigneeValue
                     , onTimerMsg = on << TimerMsg
                     }
-                    itemsAndVotes
+                    items
                     actions
         , Components.link Route.Dashboard [] "Back to dashboard"
         ]
 
 
-init : User -> String -> Time.Posix -> Model
-init user boardId now =
+init : User -> Team -> String -> Time.Posix -> Model
+init user team boardId now =
     Model user boardId now Loading
 
 
 subscriptions : (Msg -> msg) -> Model -> Sub msg
 subscriptions on (Model _ _ _ state) =
     case state of
-        AddingDiscussionItems _ _ timer ->
+        AddingDiscussionItems { timer } ->
             Timer.subscriptions (on << TimerMsg) timer
 
-        Voting _ timer ->
+        Voting { timer } ->
             Timer.subscriptions (on << TimerMsg) timer
 
-        Discussing _ _ { currentlyDiscussing } ->
-            case currentlyDiscussing of
-                Just ( _, timer ) ->
+        Discussing { currentDiscussion } ->
+            case currentDiscussion of
+                Just { timer } ->
                     Timer.subscriptions (on << TimerMsg) timer
 
                 Nothing ->
