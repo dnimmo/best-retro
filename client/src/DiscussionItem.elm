@@ -31,7 +31,7 @@ type ItemType
 type DiscussionItem
     = DiscussionItem
         { id : UniqueID
-        , author : String
+        , author : UniqueID
         , date : Time.Posix
         , content : String
         , type_ : ItemType
@@ -92,7 +92,7 @@ getLabel (DiscussionItem { type_ }) =
 
 
 type alias CreateItemParams =
-    { authorID : String -- TODO - make this a UniqueID
+    { authorID : UniqueID
     , content : String
     , timestamp : Time.Posix
     }
@@ -149,35 +149,45 @@ devDiscussionItems : List DiscussionItem
 devDiscussionItems =
     [ DiscussionItem
         { id = UniqueID.generateID (Time.millisToPosix 0)
-        , author = "John Doe"
+        , author =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
         , date = Time.millisToPosix 0
         , content = "We should start using Elm"
         , type_ = Start
         }
     , DiscussionItem
         { id = UniqueID.generateID (Time.millisToPosix 100000000)
-        , author = "John Doe"
+        , author =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
         , date = Time.millisToPosix 0
         , content = "We should high-five each other"
         , type_ = Start
         }
     , DiscussionItem
         { id = UniqueID.generateID (Time.millisToPosix 200000000)
-        , author = "John Doe"
+        , author =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
         , date = Time.millisToPosix 0
         , content = "We should stop using TypeScript"
         , type_ = Stop
         }
     , DiscussionItem
         { id = UniqueID.generateID (Time.millisToPosix 300000000)
-        , author = "John Doe"
+        , author =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
         , date = Time.millisToPosix 0
         , content = "We should stop not high-fiving each other"
         , type_ = Stop
         }
     , DiscussionItem
         { id = UniqueID.generateID (Time.millisToPosix 400000000)
-        , author = "John Doe"
+        , author =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
         , date = Time.millisToPosix 0
         , content = "We should continue being awesome"
         , type_ = Continue

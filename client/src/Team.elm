@@ -88,12 +88,17 @@ testTeam =
         { name = "Team 1"
         , members =
             [ UniqueID.generateID <|
-                Time.millisToPosix 0
+                Time.millisToPosix 800000000
             ]
         , description = "The first test team"
         , id = UniqueID.generateDefaultID
-        , creator = UniqueID.generateDefaultID
-        , admins = [ UniqueID.generateDefaultID ]
+        , creator =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
+        , admins =
+            [ UniqueID.generateID <|
+                Time.millisToPosix 800000000
+            ]
         }
 
 
@@ -104,11 +109,16 @@ teams =
         { name = "Team 2"
         , members =
             [ UniqueID.generateID <|
-                Time.millisToPosix 0
+                Time.millisToPosix 800000000
             ]
         , description = "The second test team"
         , id = UniqueID.generateDefaultID
-        , creator = UniqueID.generateDefaultID
-        , admins = [ UniqueID.generateDefaultID ]
+        , creator =
+            UniqueID.generateID <|
+                Time.millisToPosix 800000000
+        , admins =
+            [ UniqueID.generateID <|
+                Time.millisToPosix 800000000
+            ]
         }
     ]

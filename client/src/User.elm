@@ -121,7 +121,7 @@ testUser =
     User
         { id =
             UniqueID.generateID <|
-                Time.millisToPosix 0
+                Time.millisToPosix 800000000
         , name = "John Doe"
         , email = "dnimmo@gmail.com"
         , teams = [ UniqueID.generateDefaultID ]

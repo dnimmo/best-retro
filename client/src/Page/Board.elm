@@ -293,21 +293,21 @@ update now on msg ((Model user boardId startTime state) as model) =
                                     (case field of
                                         Start ->
                                             DiscussionItem.createStartItem
-                                                { authorID = "TODO - User ID here"
+                                                { authorID = User.getId user
                                                 , content = inputs.start
                                                 , timestamp = now
                                                 }
 
                                         Stop ->
                                             DiscussionItem.createStopItem
-                                                { authorID = "TODO - User ID here"
+                                                { authorID = User.getId user
                                                 , content = inputs.stop
                                                 , timestamp = now
                                                 }
 
                                         Continue ->
                                             DiscussionItem.createContinueItem
-                                                { authorID = "TODO - User ID here"
+                                                { authorID = User.getId user
                                                 , content = inputs.continue
                                                 , timestamp = now
                                                 }
