@@ -1,1 +1,1 @@
-cargo run
+go run main.go
