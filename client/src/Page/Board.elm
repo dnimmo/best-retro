@@ -921,7 +921,7 @@ view layout on (Model user team boardId startTime state) =
                 Loading.view
 
             ReadyToStart _ ->
-                Intro.view
+                Intro.view team [ User.getId user ]
 
             DiscussingPreviousActions { actions } ->
                 PreviousActions.view

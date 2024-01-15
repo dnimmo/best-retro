@@ -1,7 +1,16 @@
 module Page.SignIn exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser.Navigation as Nav
-import Components exposing (currentPasswordInput, errorMessage, form, landingComponent, linkAsSecondaryButton, primaryButton, textInput)
+import Components
+    exposing
+        ( currentPasswordInput
+        , errorMessage
+        , form
+        , landingComponent
+        , linkAsSecondaryButton
+        , primaryButton
+        , textInput
+        )
 import Components.Layout exposing (Layout)
 import Element exposing (..)
 import Http
@@ -86,8 +95,24 @@ handleLogInResult model result =
                     , User.storeUser <| User.encode user
                     )
 
-                Err _ ->
-                    ( ViewingLogInForm logInParams <| Just "Error locating user"
+                Err err ->
+                    ( ViewingLogInForm logInParams <|
+                        Just <|
+                            case err of
+                                Http.BadUrl url ->
+                                    "There was a problem with the URL: " ++ url
+
+                                Http.BadStatus _ ->
+                                    "Incorrect email address or password"
+
+                                Http.Timeout ->
+                                    "The server took too long to respond"
+
+                                Http.NetworkError ->
+                                    "There was a problem connecting to the server"
+
+                                Http.BadBody str ->
+                                    "There was a problem with the response from the server: " ++ str
                     , Cmd.none
                     )
 

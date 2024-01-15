@@ -1,17 +1,21 @@
 package user
 
+import (
+	"github.com/google/uuid"
+)
+
 type UserJson struct {
-	Id    string   `json:"id"`
-	Name  string   `json:"name"`
-	Email string   `json:"email"`
-	Teams []string `json:"teams"`
+	Id    uuid.UUID   `json:"id"`
+	Name  string      `json:"name"`
+	Email string      `json:"email"`
+	Teams []uuid.UUID `json:"teams"`
 }
 
-func New(name string, email string, teams []string) UserJson {
+func New(name string, email string) UserJson {
 	return UserJson{
-		Id:    "cceba0c3-05f5-4295-b309-7016cf867973",
+		Id:    uuid.New(),
 		Name:  name,
 		Email: email,
-		Teams: teams,
+		Teams: []uuid.UUID{},
 	}
 }

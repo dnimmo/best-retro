@@ -1,10 +1,8 @@
 module Page.MyTeams exposing (Model, Msg, init, update, view)
 
 import Components as C
-import Components.Colours as Colours
-import Components.Layout as Layout exposing (Layout)
+import Components.Layout as Layout
 import Element exposing (..)
-import Element.Background as Background
 import Route
 import Team exposing (Team)
 import User exposing (User)
@@ -38,24 +36,29 @@ update on msg model =
 
 
 -- VIEW
--- teamCard : Team -> Element msg
--- teamCard team =
---     C.card (Team.toRoute team)
---         [ C.heading <| Team.getName team
---         , C.paragraph [ Team.getDescription team ]
---         ]
+
+
+teamCard : Team -> Element msg
+teamCard team =
+    C.card
+    --(Team.toRoute team)
+    <|
+        column
+            [ width fill ]
+            [ C.heading <| Team.getName team
+            , paragraph []
+                [ el [] <|
+                    text <|
+                        Team.getDescription team
+                ]
+            ]
 
 
 teamView : List Team -> Element msg
 teamView teams =
-    text "TODO"
-
-
-
--- column [ width fill ] <|
---     C.paragraph [ "You are a member of the following teams:" ]
---         :: List.map teamCard
---             teams
+    column [ width fill ] <|
+        List.map teamCard
+            teams
 
 
 view : (Msg -> msg) -> Model -> Element msg
@@ -79,12 +82,4 @@ view on model =
 
 init : User -> Model
 init user =
-    let
-        teams =
-            User.getTeams user
-    in
-    if List.isEmpty teams then
-        NotAMemberOfAnyTeam
-
-    else
-        ViewingTeamList teams
+    NotAMemberOfAnyTeam

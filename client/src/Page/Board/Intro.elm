@@ -3,10 +3,36 @@ module Page.Board.Intro exposing (view)
 import Components.Layout as Layout
 import Element exposing (..)
 import Element.Font as Font
+import Team exposing (Team)
+import UniqueID exposing (UniqueID)
+import User
 
 
-view : Element msg
-view =
+view : Team -> List UniqueID -> Element msg
+view team presentUserIds =
+    let
+        onlineUsers =
+            []
+
+        -- team
+        --     |> Team.getMembers
+        --     |> List.filter
+        --         (\user ->
+        --             List.member
+        --                 (User.getId user)
+        --                 presentUserIds
+        --         )
+        offlineUsers =
+            []
+
+        -- team
+        --     |> Team.getMembers
+        --     |> List.filter
+        --         (\user ->
+        --             not <|
+        --                 List.member user onlineUsers
+        --         )
+    in
     column
         [ width fill
         , height fill
@@ -17,6 +43,33 @@ view =
             [ width fill
             ]
             [ el [] <| text "Welcome to today's Retrospective!"
+            ]
+        , row
+            [ width fill
+            , spacing 60
+            ]
+            [ column
+                [ alignTop
+                , spacing 16
+                ]
+                ((el [ Font.bold ] <| text "Online:")
+                    :: List.map
+                        (\user ->
+                            el [] <| text <| User.getName user
+                        )
+                        onlineUsers
+                )
+            , column
+                [ alignTop
+                , spacing 16
+                ]
+                ((el [ Font.bold ] <| text "Waiting for:")
+                    :: List.map
+                        (\user ->
+                            el [] <| text <| User.getName user
+                        )
+                        offlineUsers
+                )
             ]
         , column
             [ centerX

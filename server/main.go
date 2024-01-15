@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bestretro/user"
 	"encoding/json"
 	"log"
 	"net/http"
-	"user"
 )
 
 func main() {
@@ -15,7 +15,6 @@ func main() {
 		newUser := user.New(
 			"Nimmo",
 			"dnimmo@gmail.com",
-			[]string{},
 		)
 
 		json.NewEncoder(w).Encode(newUser)

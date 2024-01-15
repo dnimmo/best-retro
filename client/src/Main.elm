@@ -20,7 +20,7 @@ import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
 import Page.Team as TeamPage
 import Route
-import Team exposing (testTeam)
+import Team
 import Time
 import Url exposing (Url)
 import User exposing (User)
@@ -162,6 +162,7 @@ update msg model =
                         | state =
                             ViewingDashboard user
                                 Dashboard.init
+                        , user = Just user
                       }
                     , Cmd.none
                     )

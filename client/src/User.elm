@@ -9,17 +9,13 @@ port module User exposing
     , getId
     , getName
     , getTeams
-    , getUser
     , storeUser
-    , testUser
     , userLoaded
     )
 
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Team exposing (Team)
-import Time
 import UniqueID exposing (UniqueID)
 
 
@@ -45,17 +41,9 @@ getId (User { id }) =
     id
 
 
-getUser : User
-getUser =
-    -- Eventually this will actually fetch a user properly
-    testUser
-
-
-getTeams : User -> List Team
+getTeams : User -> List UniqueID
 getTeams (User { teams }) =
     teams
-        |> List.map (\id -> Team.getTeam id)
-        |> List.filterMap identity
 
 
 type alias CreateUserParams =
@@ -111,18 +99,6 @@ type alias LogInParams =
 attemptToLogIn : LogInParams -> (Result Http.Error User -> msg) -> Cmd msg
 attemptToLogIn _ responseMsg =
     Http.get
-        { url = "http://localhost:8080/user"
+        { url = "http://localhost:8080/auth"
         , expect = Http.expectJson responseMsg decode
-        }
-
-
-testUser : User
-testUser =
-    User
-        { id =
-            UniqueID.generateID <|
-                Time.millisToPosix 800000000
-        , name = "John Doe"
-        , email = "dnimmo@gmail.com"
-        , teams = [ UniqueID.generateDefaultID ]
         }
