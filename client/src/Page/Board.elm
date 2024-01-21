@@ -915,7 +915,8 @@ view layout on (Model user team boardId startTime state) =
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ addFacilitatorControls user state on
+        [ Components.link Route.Dashboard [] "< Back to dashboard"
+        , addFacilitatorControls user state on
         , case state of
             Loading ->
                 Loading.view
@@ -1009,7 +1010,6 @@ view layout on (Model user team boardId startTime state) =
                     }
                     items
                     actions
-        , Components.link Route.Dashboard [] "Back to dashboard"
         ]
 
 

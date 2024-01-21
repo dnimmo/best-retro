@@ -1,6 +1,7 @@
 module ActionItem exposing
     ( ActionItem
     , Status
+    , decode
     , devActionItems
     , getAssignee
     , getContent
@@ -21,6 +22,7 @@ module ActionItem exposing
 import Components.Icons as Icons
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (Element)
+import Json.Decode as Decode
 import Time
 import UniqueID exposing (UniqueID)
 
@@ -155,38 +157,6 @@ setToDo itemId actions =
             )
 
 
-devActionItems : List ActionItem
-devActionItems =
-    [ ActionItem
-        { id = UniqueID.generateID (Time.millisToPosix 1000)
-        , author = UniqueID.generateDefaultID
-        , assignee = "Dante"
-        , date = Time.millisToPosix 0
-        , content = "Chirp loudly"
-        , status = ToDo
-        , originalDiscussionItem = Nothing
-        }
-    , ActionItem
-        { id = UniqueID.generateID (Time.millisToPosix 100)
-        , author = UniqueID.generateDefaultID
-        , assignee = "Dante"
-        , date = Time.millisToPosix 0
-        , content = "Be a handsome little man"
-        , status = InProgress
-        , originalDiscussionItem = Nothing
-        }
-    , ActionItem
-        { id = UniqueID.generateID (Time.millisToPosix 10)
-        , author = UniqueID.generateDefaultID
-        , assignee = "Nimmo"
-        , date = Time.millisToPosix 0
-        , content = "Feed Dante"
-        , status = Complete
-        , originalDiscussionItem = Nothing
-        }
-    ]
-
-
 notCompletedBefore : Time.Posix -> List ActionItem -> List ActionItem
 notCompletedBefore posix =
     List.filter
@@ -217,3 +187,79 @@ new { description, now, author, maybeDiscussionItem, assignee } =
         , status = ToDo
         , originalDiscussionItem = maybeDiscussionItem
         }
+
+
+decode : Decode.Decoder ActionItem
+decode =
+    let
+        toActionItem : UniqueID -> UniqueID -> String -> String -> Status -> ActionItem
+        toActionItem id author assignee content status =
+            ActionItem
+                { id = id
+                , author = author
+                , assignee = assignee
+                , date = Time.millisToPosix 0
+                , content = content
+                , status = status
+                , originalDiscussionItem = Nothing
+                }
+    in
+    Decode.map5
+        toActionItem
+        (Decode.field "id" UniqueID.decode)
+        (Decode.field "author" UniqueID.decode)
+        (Decode.field "assignee" Decode.string)
+        (Decode.field "content" Decode.string)
+        (Decode.field "status" Decode.string
+            |> Decode.andThen
+                (\status ->
+                    case status of
+                        "TO_DO" ->
+                            Decode.succeed ToDo
+
+                        "IN_PROGRESS" ->
+                            Decode.succeed InProgress
+
+                        "COMPLETE" ->
+                            Decode.succeed Complete
+
+                        _ ->
+                            Decode.fail "Invalid status"
+                )
+        )
+
+
+
+-- DEV DATA
+
+
+devActionItems : List ActionItem
+devActionItems =
+    [ ActionItem
+        { id = UniqueID.generateID (Time.millisToPosix 1000)
+        , author = UniqueID.generateDefaultID
+        , assignee = "Dante"
+        , date = Time.millisToPosix 0
+        , content = "Chirp loudly"
+        , status = ToDo
+        , originalDiscussionItem = Nothing
+        }
+    , ActionItem
+        { id = UniqueID.generateID (Time.millisToPosix 100)
+        , author = UniqueID.generateDefaultID
+        , assignee = "Dante"
+        , date = Time.millisToPosix 0
+        , content = "Be a handsome little man"
+        , status = InProgress
+        , originalDiscussionItem = Nothing
+        }
+    , ActionItem
+        { id = UniqueID.generateID (Time.millisToPosix 10)
+        , author = UniqueID.generateDefaultID
+        , assignee = "Nimmo"
+        , date = Time.millisToPosix 0
+        , content = "Feed Dante"
+        , status = Complete
+        , originalDiscussionItem = Nothing
+        }
+    ]

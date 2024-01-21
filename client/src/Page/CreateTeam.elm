@@ -92,8 +92,10 @@ view on model =
         [ width fill
         , Layout.commonPadding
         , Layout.commonColumnSpacing
+        , spacing 24
         ]
-        [ C.heading "Create new team"
+        [ C.link Route.Dashboard [] "< Back to dashboard"
+        , C.heading "Create new team"
         , case model of
             ViewingCreateTeamFields { teamName } ->
                 column []

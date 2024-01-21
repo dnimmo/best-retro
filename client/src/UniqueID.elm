@@ -3,6 +3,7 @@ module UniqueID exposing
     , compare
     , decode
     , encode
+    , fromString
     , generateDefaultID
     , generateID
     , getID
@@ -29,6 +30,16 @@ getID (UniqueID id) =
 toComparable : UniqueID -> String
 toComparable (UniqueID id) =
     UUID.toString id
+
+
+fromString : String -> Maybe UniqueID
+fromString str =
+    case UUID.fromString str of
+        Ok id ->
+            Just <| UniqueID id
+
+        Err _ ->
+            Nothing
 
 
 generateID : Time.Posix -> UniqueID

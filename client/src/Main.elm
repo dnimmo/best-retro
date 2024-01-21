@@ -22,6 +22,7 @@ import Page.Team as TeamPage
 import Route
 import Team
 import Time
+import UniqueID
 import Url exposing (Url)
 import User exposing (User)
 
@@ -75,53 +76,93 @@ type Msg
 
 urlChange : Url -> Model -> ( Model, Cmd Msg )
 urlChange url model =
-    ( { model
-        | state =
-            case model.user of
-                Nothing ->
-                    case Route.fromUrl url of
-                        Just Route.Home ->
-                            ViewingHome
+    let
+        newState state =
+            { model | state = state }
+    in
+    case model.user of
+        Nothing ->
+            case Route.fromUrl url of
+                Just Route.Home ->
+                    ( newState ViewingHome
+                    , Cmd.none
+                    )
 
-                        Just Route.CreateAccount ->
-                            ViewingCreateAccount CreateAccount.init
+                Just Route.CreateAccount ->
+                    ( newState <| ViewingCreateAccount CreateAccount.init
+                    , Cmd.none
+                    )
 
-                        Just Route.SignIn ->
-                            ViewingSignIn SignIn.init
+                Just Route.SignIn ->
+                    ( newState <| ViewingSignIn SignIn.init
+                    , Cmd.none
+                    )
 
-                        Just Route.ForgottenPassword ->
-                            ViewingForgottenPassword ForgottenPassword.init
+                Just Route.ForgottenPassword ->
+                    ( newState <| ViewingForgottenPassword ForgottenPassword.init
+                    , Cmd.none
+                    )
 
-                        _ ->
-                            -- TODO: Maybe show some error in this situation
-                            ViewingHome
+                _ ->
+                    -- TODO: Maybe show some error in this situation
+                    ( newState ViewingHome
+                    , Cmd.none
+                    )
 
-                Just user ->
-                    case Route.fromUrl url of
-                        Just Route.Dashboard ->
-                            ViewingDashboard user Dashboard.init
+        Just user ->
+            case Route.fromUrl url of
+                Just Route.Dashboard ->
+                    ( newState <| ViewingDashboard user Dashboard.init
+                    , Cmd.none
+                    )
 
-                        Just Route.MyTeams ->
-                            ViewingMyTeams user <|
-                                MyTeams.init user
+                Just Route.MyTeams ->
+                    let
+                        ( myTeamsModel, cmd ) =
+                            MyTeams.init MyTeamsMsg user
+                    in
+                    ( newState <|
+                        ViewingMyTeams user <|
+                            myTeamsModel
+                    , cmd
+                    )
 
-                        Just Route.CreateTeam ->
-                            ViewingCreateTeam user CreateTeam.init
+                Just Route.CreateTeam ->
+                    ( newState <| ViewingCreateTeam user CreateTeam.init
+                    , Cmd.none
+                    )
 
-                        Just (Route.Team teamId) ->
-                            ViewingTeam user <|
-                                TeamPage.init teamId
+                Just (Route.Team teamId) ->
+                    case UniqueID.fromString teamId of
+                        Nothing ->
+                            ( newState <|
+                                ViewingError "Invalid team ID"
+                            , Cmd.none
+                            )
 
-                        Just (Route.Board boardId) ->
-                            ViewingBoard user <|
-                                Board.init user Team.testTeam boardId model.now
+                        Just id ->
+                            let
+                                ( teamModel, cmd ) =
+                                    TeamPage.init TeamMsg id
+                            in
+                            ( newState <|
+                                ViewingTeam user <|
+                                    teamModel
+                            , cmd
+                            )
 
-                        _ ->
-                            -- TODO: Maybe show some error in this situation
-                            ViewingDashboard user Dashboard.init
-      }
-    , Cmd.none
-    )
+                Just (Route.Board boardId) ->
+                    ( newState <|
+                        ViewingBoard user <|
+                            Board.init user Team.testTeam boardId model.now
+                    , Cmd.none
+                    )
+
+                _ ->
+                    -- TODO: Maybe show some error in this situation
+                    ( newState <| ViewingDashboard user Dashboard.init
+                    , Cmd.none
+                    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -234,6 +275,17 @@ update msg model =
             , cmd
             )
 
+        ( TeamMsg teamMsg, ViewingTeam user teamModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    TeamPage.update TeamMsg teamMsg teamModel
+            in
+            ( { model
+                | state = ViewingTeam user updatedModel
+              }
+            , cmd
+            )
+
         ( CreateTeamMsg createTeamMsg, ViewingCreateTeam user createTeamModel ) ->
             let
                 ( updatedModel, cmd ) =
@@ -295,7 +347,7 @@ view model =
                     Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
 
                 ViewingTeam _ teamModel ->
-                    Layout.withHeader (Route.Team "") <| TeamPage.view TeamMsg teamModel
+                    Layout.withHeader (Route.Team "") <| TeamPage.view TeamMsg model.layout teamModel
 
                 ViewingBoard _ boardModel ->
                     Layout.withHeader (Route.Board "") <| Board.view model.layout BoardMsg boardModel
