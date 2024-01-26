@@ -11,6 +11,7 @@ import Components.Layout as Layout
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Route exposing (..)
 
 
@@ -189,12 +190,22 @@ card (Card str variant) =
                         ]
 
                     Link _ ->
-                        [ row [ width fill ]
+                        [ row
+                            [ width fill
+                            , padding 20
+                            , Background.color Colours.mediumBlue
+                            , Border.rounded 5
+                            , Font.color Colours.white
+                            ]
                             [ el
-                                Font.title
+                                (centerX :: Font.title)
                               <|
                                 text str
-                            , el [ alignRight ] <| Icons.rightArrow
+                            , el
+                                [ alignRight
+                                ]
+                              <|
+                                Icons.rightArrow
                             ]
                         ]
     in

@@ -8,6 +8,7 @@ import Components.Font as Font
 import Components.Icons as Icons
 import Components.Input as Input
 import Components.Layout as Layout exposing (Layout, commonRowSpacing)
+import Components.Navigation as Navigation
 import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
@@ -909,13 +910,8 @@ addFacilitatorControls loggedInUser state on =
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
 view layout on (Model user team boardId startTime state) =
-    column
-        [ width fill
-        , height fill
-        , Layout.commonPadding
-        , Layout.commonColumnSpacing
-        ]
-        [ Components.link Route.Dashboard [] "< Back to dashboard"
+    Layout.page
+        [ Navigation.breadCrumb <| Route.Board boardId
         , addFacilitatorControls user state on
         , case state of
             Loading ->

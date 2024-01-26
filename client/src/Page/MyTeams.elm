@@ -2,6 +2,7 @@ module Page.MyTeams exposing (Model, Msg, init, update, view)
 
 import Components as C
 import Components.Layout as Layout
+import Components.Navigation as Navigation
 import Element exposing (..)
 import Http
 import Route
@@ -90,7 +91,7 @@ view on model =
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ C.link Route.Dashboard [] "< Back to dashboard"
+        [ Navigation.breadCrumb Route.MyTeams
         , C.heading "My Teams"
         , case model of
             LoadingTeams ->

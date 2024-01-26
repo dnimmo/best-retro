@@ -1,11 +1,9 @@
 module Page.Dashboard exposing (Model, Msg, init, update, view)
 
 import Components.Card as Card
-import Components.Colours as Colours
-import Components.Icons as Icons
 import Components.Layout as Layout
+import Components.Navigation as Navigation
 import Element exposing (..)
-import Element.Font as Font
 import Route
 
 
@@ -46,11 +44,7 @@ view on model =
         , Layout.commonPadding
         , Layout.commonColumnSpacing
         ]
-        [ el
-            [ Font.color Colours.mediumBlue
-            ]
-          <|
-            Icons.fromRoute Route.Dashboard
+        [ Navigation.breadCrumb Route.Dashboard
         , Card.link "My Teams" Route.MyTeams
         , Card.link "Create New Team" Route.CreateTeam
         , Card.link "Board (For Dev)" <| Route.Board "dev-board"

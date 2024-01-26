@@ -1,11 +1,10 @@
 module Page.CreateTeam exposing (Model, Msg, init, update, view)
 
 import Components as C
-import Components.Colours as Colours
 import Components.Input as Input
 import Components.Layout as Layout
+import Components.Navigation as Navigation
 import Element exposing (..)
-import Element.Background as Background
 import Logger
 import Route
 
@@ -43,6 +42,9 @@ modelToString model =
 
 type Msg
     = UpdateTeamName String
+    | UpdateEmailField String
+    | AddNewEmailField
+    | SubmitAllEmails
     | SubmitNewTeam
 
 
@@ -51,6 +53,15 @@ msgToString msg =
     case msg of
         UpdateTeamName str ->
             "UpdateTeamName " ++ str
+
+        UpdateEmailField str ->
+            "UpdateEmailField " ++ str
+
+        AddNewEmailField ->
+            "AddNewEmailField"
+
+        SubmitAllEmails ->
+            "SubmitAllEmails"
 
         SubmitNewTeam ->
             "SubmitNewTeam"
@@ -67,8 +78,12 @@ update on msg model =
             , Cmd.none
             )
 
-        ( SubmitNewTeam, ViewingCreateTeamFields _ ) ->
-            ( TeamCreated
+        ( SubmitNewTeam, ViewingCreateTeamFields { teamName } ) ->
+            ( if String.isEmpty teamName then
+                model
+
+              else
+                TeamCreated
             , Cmd.none
             )
 
@@ -94,11 +109,11 @@ view on model =
         , Layout.commonColumnSpacing
         , spacing 24
         ]
-        [ C.link Route.Dashboard [] "< Back to dashboard"
+        [ Navigation.breadCrumb Route.CreateTeam
         , C.heading "Create new team"
         , case model of
             ViewingCreateTeamFields { teamName } ->
-                column []
+                column [ spacing 24 ]
                     [ Input.plainText
                         { labelString = "Team name"
                         , text = teamName
@@ -119,7 +134,6 @@ view on model =
 
             Error errorMessage ->
                 text errorMessage
-        , C.link Route.Dashboard [] "Back to dashboard"
         ]
 
 

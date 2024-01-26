@@ -8,6 +8,7 @@ import Components.Layout as Layout exposing (Layout)
 import Http exposing (Error(..))
 import Json.Decode as Decode
 import Logger
+import Page.AddTeamMembers as AddTeamMembers
 import Page.Board as Board
 import Page.CreateAccount as CreateAccount
 import Page.CreateTeam as CreateTeam
@@ -49,6 +50,7 @@ type State
     | ViewingDashboard User Dashboard.Model
     | ViewingMyTeams User MyTeams.Model
     | ViewingCreateTeam User CreateTeam.Model
+    | ViewingAddTeamMembers User AddTeamMembers.Model
     | ViewingTeam User TeamPage.Model
     | ViewingBoard User Board.Model
     | ViewingError String
@@ -69,6 +71,7 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | MyTeamsMsg MyTeams.Msg
     | CreateTeamMsg CreateTeam.Msg
+    | AddTeamMembersMsg AddTeamMembers.Msg
     | TeamMsg TeamPage.Msg
     | BoardMsg Board.Msg
     | UserLoaded Decode.Value
@@ -148,6 +151,25 @@ urlChange url model =
                             ( newState <|
                                 ViewingTeam user <|
                                     teamModel
+                            , cmd
+                            )
+
+                Just (Route.AddTeamMembers teamId) ->
+                    case UniqueID.fromString teamId of
+                        Nothing ->
+                            ( newState <|
+                                ViewingError "Invalid team ID"
+                            , Cmd.none
+                            )
+
+                        Just id ->
+                            let
+                                ( addTeamMembersModel, cmd ) =
+                                    AddTeamMembers.init AddTeamMembersMsg id
+                            in
+                            ( newState <|
+                                ViewingAddTeamMembers user <|
+                                    addTeamMembersModel
                             , cmd
                             )
 
@@ -297,6 +319,17 @@ update msg model =
             , cmd
             )
 
+        ( AddTeamMembersMsg addTeamMembersMsg, ViewingAddTeamMembers user addTeamMembersModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    AddTeamMembers.update AddTeamMembersMsg addTeamMembersMsg addTeamMembersModel
+            in
+            ( { model
+                | state = ViewingAddTeamMembers user updatedModel
+              }
+            , cmd
+            )
+
         ( BoardMsg boardMsg, ViewingBoard user boardModel ) ->
             let
                 ( updatedModel, cmd ) =
@@ -345,6 +378,9 @@ view model =
 
                 ViewingCreateTeam _ createTeamModel ->
                     Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
+
+                ViewingAddTeamMembers _ addTeamMembersModel ->
+                    Layout.withHeader (Route.AddTeamMembers "") <| AddTeamMembers.view AddTeamMembersMsg addTeamMembersModel
 
                 ViewingTeam _ teamModel ->
                     Layout.withHeader (Route.Team "") <| TeamPage.view TeamMsg model.layout teamModel

@@ -41,13 +41,19 @@ rightArrowInternal colour =
 
 rightArrow : Element msg
 rightArrow =
-    rightArrowInternal Default
+    rightArrowInternal Inherit
 
 
 home : Element msg
 home =
     html <|
         Icons.home iconSize IconTypes.Inherit
+
+
+addUser : Element msg
+addUser =
+    html <|
+        Icons.person_add iconSize IconTypes.Inherit
 
 
 start : Element msg
@@ -73,6 +79,21 @@ fromRoute route =
     case route of
         Route.Dashboard ->
             home
+
+        Route.AddTeamMembers _ ->
+            addUser
+
+        Route.Team _ ->
+            group
+
+        Route.MyTeams ->
+            myTeams
+
+        Route.CreateTeam ->
+            createNewTeam
+
+        Route.Board _ ->
+            board
 
         _ ->
             rightArrowInternal Inherit
@@ -280,3 +301,27 @@ addTime : Element msg
 addTime =
     html <|
         Icons.add_alarm smallIconSize IconTypes.Inherit
+
+
+group : Element msg
+group =
+    html <|
+        Icons.groups iconSize IconTypes.Inherit
+
+
+myTeams : Element msg
+myTeams =
+    html <|
+        Icons.group_work iconSize IconTypes.Inherit
+
+
+createNewTeam : Element msg
+createNewTeam =
+    html <|
+        Icons.add_circle_outline iconSize IconTypes.Inherit
+
+
+board : Element msg
+board =
+    html <|
+        Icons.dashboard iconSize IconTypes.Inherit

@@ -13,6 +13,7 @@ module Components.Layout exposing
     , label
     , landingComponentContent
     , lessRowSpacing
+    , page
     , rightAlign
     , spacingElement
     , withHeader
@@ -231,3 +232,13 @@ commonRowSpacing =
 lessRowSpacing : Attribute msg
 lessRowSpacing =
     spacing 5
+
+
+page : List (Element msg) -> Element msg
+page =
+    column
+        [ width fill
+        , height fill
+        , commonPadding
+        , commonColumnSpacing
+        ]

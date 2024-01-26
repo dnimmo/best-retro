@@ -4,7 +4,9 @@ import ActionItem exposing (ActionItem)
 import Components
 import Components.Card as Card
 import Components.Layout as Layout exposing (Layout)
+import Components.Navigation as Navigation
 import Element exposing (..)
+import Element.Border as Border
 import Element.Font as Font
 import Http
 import Route
@@ -144,80 +146,89 @@ update on msg ((Model details state) as model) =
 -- VIEW
 
 
-teamView : Layout -> List Team.MemberDetails -> List ActionItem -> Element msg
-teamView layout members actions =
-    Layout.containingElement layout
+teamView : Layout -> UniqueID -> List Team.MemberDetails -> List ActionItem -> Element msg
+teamView layout teamId members actions =
+    column
         [ width fill
-        , spacing 40
+        , spacing 24
         ]
-        [ column
+        [ el [ Border.rounded 10 ] <|
+            Card.link "Add members" <|
+                Route.AddTeamMembers <|
+                    UniqueID.toString teamId
+        , Layout.containingElement layout
             [ width fill
-            , spacing 24
-            , alignTop
+            , spacing 40
             ]
-            [ el [ Font.bold ] <| text "Members"
-            , if List.isEmpty members then
-                el [] <| text "There are no members in this team!"
+            [ column
+                [ width fill
+                , spacing 24
+                , alignTop
+                ]
+                [ el [ Font.bold ] <| text "Members"
+                , if List.isEmpty members then
+                    el [] <| text "There are no members in this team!"
 
-              else
-                column
-                    [ width fill
-                    , spacing 24
-                    ]
-                    (members
-                        |> List.map
-                            (\member ->
-                                Components.card <|
-                                    column
-                                        [ width fill
-                                        , spacing 24
-                                        ]
-                                        [ el [ Font.bold ] <| text member.name
-                                        , el [] <| text member.email
-                                        ]
-                            )
-                    )
-            ]
-        , column
-            [ width fill
-            , spacing 24
-            , alignTop
-            ]
-            [ el [ Font.bold ] <| text "Actions"
-            , if List.isEmpty actions then
-                el [] <| text "There are no actions for this team"
+                  else
+                    column
+                        [ width fill
+                        , spacing 24
+                        ]
+                        (members
+                            |> List.map
+                                (\member ->
+                                    Components.card <|
+                                        column
+                                            [ width fill
+                                            , spacing 24
+                                            ]
+                                            [ el [ Font.bold ] <| text member.name
+                                            , el [] <| text member.email
+                                            ]
+                                )
+                        )
+                ]
+            , column
+                [ width fill
+                , spacing 24
+                , alignTop
+                ]
+                [ el [ Font.bold ] <| text "Actions"
+                , if List.isEmpty actions then
+                    el [] <| text "There are no actions for this team"
 
-              else
-                column
-                    [ width fill
-                    , spacing 24
-                    ]
-                    (actions
-                        |> List.map
-                            (\action ->
-                                el
-                                    (Card.styles
-                                        { highlight =
-                                            ActionItem.isComplete action
-                                        }
-                                    )
-                                <|
-                                    Card.basicActionCard action
-                            )
-                    )
+                  else
+                    column
+                        [ width fill
+                        , spacing 24
+                        ]
+                        (actions
+                            |> List.map
+                                (\action ->
+                                    el
+                                        (Card.styles
+                                            { highlight =
+                                                ActionItem.isComplete action
+                                            }
+                                        )
+                                    <|
+                                        Card.basicActionCard action
+                                )
+                        )
+                ]
             ]
         ]
 
 
 view : (Msg -> msg) -> Layout -> Model -> Element msg
-view on layout (Model _ state) =
+view on layout (Model { teamId } state) =
     column
         [ height fill
         , width fill
         , spacing 24
         , padding 24
         ]
-        [ Components.link Route.Dashboard [] "< Back to dashboard"
+        [ Navigation.breadCrumb <| Route.Team <| UniqueID.toString teamId
         , Components.heading "My Team"
         , case state of
             LoadingTeam _ ->
@@ -237,7 +248,7 @@ view on layout (Model _ state) =
                     text str
 
             ViewingTeam { members, actions } ->
-                teamView layout members actions
+                teamView layout teamId members actions
         ]
 
 

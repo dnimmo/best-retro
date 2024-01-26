@@ -14,6 +14,7 @@ type Route
     | MyTeams
     | Team String
     | CreateTeam
+    | AddTeamMembers String
     | Board String
     | Error
 
@@ -57,6 +58,9 @@ toUrlString route =
                 CreateTeam ->
                     slugs.createTeam
 
+                AddTeamMembers teamId ->
+                    slugs.viewingTeam ++ "/" ++ teamId ++ "/add-members"
+
                 Team teamId ->
                     slugs.viewingTeam ++ "/" ++ teamId
 
@@ -79,6 +83,7 @@ parser =
         , Parser.map Dashboard (s slugs.dashboard)
         , Parser.map MyTeams (s slugs.myTeams)
         , Parser.map CreateTeam (s slugs.createTeam)
+        , Parser.map AddTeamMembers (s slugs.viewingTeam </> Parser.string </> s "add-members")
         , Parser.map Team (s slugs.viewingTeam </> Parser.string)
         , Parser.map Board (s slugs.viewingBoard </> Parser.string)
         , Parser.map Error (s slugs.error)
