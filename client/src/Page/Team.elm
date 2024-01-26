@@ -222,12 +222,7 @@ teamView layout teamId members actions =
 
 view : (Msg -> msg) -> Layout -> Model -> Element msg
 view on layout (Model { teamId } state) =
-    column
-        [ height fill
-        , width fill
-        , spacing 24
-        , padding 24
-        ]
+    Layout.page
         [ Navigation.breadCrumb <| Route.Team <| UniqueID.toString teamId
         , Components.heading "My Team"
         , case state of

@@ -325,3 +325,9 @@ board : Element msg
 board =
     html <|
         Icons.dashboard iconSize IconTypes.Inherit
+
+
+breadCrumbArrow : Element msg
+breadCrumbArrow =
+    html <|
+        Icons.arrow_forward smallIconSize IconTypes.Inherit

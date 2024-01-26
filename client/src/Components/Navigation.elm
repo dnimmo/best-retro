@@ -24,9 +24,16 @@ breadCrumbLink route =
 breadCrumb : Route -> Element msg
 breadCrumb route =
     row
-        [ Font.color Colours.mediumBlue ]
+        [ Font.color Colours.mediumBlue
+        , spacing 5
+        ]
     <|
-        List.intersperse (el [ Font.color Colours.darkBlue ] Icons.rightArrow) <|
+        List.intersperse
+            (el
+                [ Font.color Colours.darkBlue ]
+                Icons.breadCrumbArrow
+            )
+        <|
             breadCrumbLink Route.Dashboard
                 :: (case route of
                         Route.Dashboard ->
