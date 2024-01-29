@@ -361,3 +361,9 @@ radioUnchecked : Element msg
 radioUnchecked =
     html <|
         Icons.radio_button_unchecked iconSize IconTypes.Inherit
+
+
+task : Element msg
+task =
+    html <|
+        Icons.task iconSize IconTypes.Inherit

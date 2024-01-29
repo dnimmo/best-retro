@@ -192,7 +192,7 @@ card (Card str variant) =
                     Link _ ->
                         [ row
                             [ width fill
-                            , padding 20
+                            , paddingXY 20 10
                             , Background.color Colours.mediumBlue
                             , Border.rounded 5
                             , Font.color Colours.white
