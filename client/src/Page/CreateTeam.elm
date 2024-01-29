@@ -112,15 +112,11 @@ view on model =
         , case model of
             ViewingCreateTeamFields { teamName } ->
                 column [ spacing 24 ]
-                    [ Input.plainText
+                    [ Input.inputFieldWithInsetButton
                         { labelString = "Team name"
-                        , text = teamName
+                        , value = teamName
                         , onChange = on << UpdateTeamName
-                        , placeholder = Nothing
-                        }
-                    , Input.primaryActionButton
-                        { labelString = "Create team"
-                        , onPress = on SubmitNewTeam
+                        , onSubmit = on SubmitNewTeam
                         }
                     ]
 
