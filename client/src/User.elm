@@ -6,6 +6,7 @@ port module User exposing
     , createUser
     , decode
     , encode
+    , getFocusedTeamId
     , getId
     , getName
     , getTeams
@@ -28,6 +29,7 @@ type alias Details =
     , name : String
     , email : String
     , teams : List UniqueID
+    , focusedTeam : Maybe UniqueID
     }
 
 
@@ -44,6 +46,11 @@ getId (User { id }) =
 getTeams : User -> List UniqueID
 getTeams (User { teams }) =
     teams
+
+
+getFocusedTeamId : User -> Maybe UniqueID
+getFocusedTeamId (User { focusedTeam }) =
+    focusedTeam
 
 
 type alias CreateUserParams =
@@ -71,25 +78,35 @@ encode (User user) =
         , ( "name", Encode.string user.name )
         , ( "email", Encode.string user.email )
         , ( "teams", Encode.list UniqueID.encode user.teams )
+        , ( "focusedTeam"
+          , case user.focusedTeam of
+                Just id ->
+                    UniqueID.encode id
+
+                Nothing ->
+                    Encode.null
+          )
         ]
 
 
 decode : Decode.Decoder User
 decode =
     let
-        toUser id name email teams =
+        toUser id name email teams focusedTeam =
             User
                 { id = id
                 , name = name
                 , email = email
                 , teams = teams
+                , focusedTeam = focusedTeam
                 }
     in
-    Decode.map4 toUser
+    Decode.map5 toUser
         (Decode.field "id" UniqueID.decode)
         (Decode.field "name" Decode.string)
         (Decode.field "email" Decode.string)
         (Decode.field "teams" (Decode.list UniqueID.decode))
+        (Decode.field "focusedTeam" (Decode.maybe UniqueID.decode))
 
 
 type alias LogInParams =

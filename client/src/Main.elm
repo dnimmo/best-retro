@@ -23,7 +23,7 @@ import Page.Team as TeamPage
 import Route
 import Team
 import Time
-import UniqueID
+import UniqueID exposing (UniqueID)
 import Url exposing (Url)
 import User exposing (User)
 
@@ -51,7 +51,7 @@ type State
     | ViewingMyTeams User MyTeams.Model
     | ViewingCreateTeam User CreateTeam.Model
     | ViewingAddTeamMembers User AddTeamMembers.Model
-    | ViewingTeam User TeamPage.Model
+    | ViewingTeam User UniqueID TeamPage.Model
     | ViewingBoard User Board.Model
     | ViewingError String
 
@@ -115,8 +115,12 @@ urlChange url model =
         Just user ->
             case Route.fromUrl url of
                 Just Route.Dashboard ->
-                    ( newState <| ViewingDashboard user Dashboard.init
-                    , Cmd.none
+                    let
+                        ( dashboardModel, cmd ) =
+                            Dashboard.init DashboardMsg user
+                    in
+                    ( newState <| ViewingDashboard user dashboardModel
+                    , cmd
                     )
 
                 Just Route.MyTeams ->
@@ -149,7 +153,7 @@ urlChange url model =
                                     TeamPage.init TeamMsg id
                             in
                             ( newState <|
-                                ViewingTeam user <|
+                                ViewingTeam user id <|
                                     teamModel
                             , cmd
                             )
@@ -176,14 +180,18 @@ urlChange url model =
                 Just (Route.Board boardId) ->
                     ( newState <|
                         ViewingBoard user <|
-                            Board.init user Team.testTeam boardId model.now
+                            Board.init user (Debug.todo "initialise team") boardId model.now
                     , Cmd.none
                     )
 
                 _ ->
                     -- TODO: Maybe show some error in this situation
-                    ( newState <| ViewingDashboard user Dashboard.init
-                    , Cmd.none
+                    let
+                        ( dashboardModel, cmd ) =
+                            Dashboard.init DashboardMsg user
+                    in
+                    ( newState <| ViewingDashboard user dashboardModel
+                    , cmd
                     )
 
 
@@ -221,13 +229,16 @@ update msg model =
         ( UserLoaded decodedUser, _ ) ->
             case Decode.decodeValue User.decode decodedUser of
                 Ok user ->
+                    let
+                        ( dashboardModel, cmd ) =
+                            Dashboard.init DashboardMsg user
+                    in
                     ( { model
                         | state =
-                            ViewingDashboard user
-                                Dashboard.init
+                            ViewingDashboard user dashboardModel
                         , user = Just user
                       }
-                    , Cmd.none
+                    , cmd
                     )
 
                 Err err ->
@@ -297,13 +308,13 @@ update msg model =
             , cmd
             )
 
-        ( TeamMsg teamMsg, ViewingTeam user teamModel ) ->
+        ( TeamMsg teamMsg, ViewingTeam teamId user teamModel ) ->
             let
                 ( updatedModel, cmd ) =
                     TeamPage.update TeamMsg teamMsg teamModel
             in
             ( { model
-                | state = ViewingTeam user updatedModel
+                | state = ViewingTeam teamId user updatedModel
               }
             , cmd
             )
@@ -380,10 +391,15 @@ view model =
                     Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
 
                 ViewingAddTeamMembers _ addTeamMembersModel ->
-                    Layout.withHeader (Route.AddTeamMembers "") <| AddTeamMembers.view AddTeamMembersMsg addTeamMembersModel
+                    Layout.withHeader (Route.AddTeamMembers "") <| AddTeamMembers.view AddTeamMembersMsg model.layout addTeamMembersModel
 
-                ViewingTeam _ teamModel ->
-                    Layout.withHeader (Route.Team "") <| TeamPage.view TeamMsg model.layout teamModel
+                ViewingTeam _ teamId teamModel ->
+                    Layout.withHeader
+                        (Route.Team <|
+                            UniqueID.toString teamId
+                        )
+                    <|
+                        TeamPage.view TeamMsg model.layout teamModel
 
                 ViewingBoard _ boardModel ->
                     Layout.withHeader (Route.Board "") <| Board.view model.layout BoardMsg boardModel

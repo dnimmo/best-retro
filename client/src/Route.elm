@@ -30,6 +30,7 @@ slugs =
     , viewingTeam = "team"
     , error = "something-has-gone-wrong"
     , viewingBoard = "board"
+    , addMembers = "add-members"
     }
 
 
@@ -59,7 +60,11 @@ toUrlString route =
                     slugs.createTeam
 
                 AddTeamMembers teamId ->
-                    slugs.viewingTeam ++ "/" ++ teamId ++ "/add-members"
+                    slugs.viewingTeam
+                        ++ "/"
+                        ++ teamId
+                        ++ "/"
+                        ++ slugs.addMembers
 
                 Team teamId ->
                     slugs.viewingTeam ++ "/" ++ teamId
@@ -83,7 +88,7 @@ parser =
         , Parser.map Dashboard (s slugs.dashboard)
         , Parser.map MyTeams (s slugs.myTeams)
         , Parser.map CreateTeam (s slugs.createTeam)
-        , Parser.map AddTeamMembers (s slugs.viewingTeam </> Parser.string </> s "add-members")
+        , Parser.map AddTeamMembers (s slugs.viewingTeam </> Parser.string </> s slugs.addMembers)
         , Parser.map Team (s slugs.viewingTeam </> Parser.string)
         , Parser.map Board (s slugs.viewingBoard </> Parser.string)
         , Parser.map Error (s slugs.error)

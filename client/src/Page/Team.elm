@@ -3,8 +3,8 @@ module Page.Team exposing (Model, Msg, init, update, view)
 import ActionItem exposing (ActionItem)
 import Components
 import Components.Card as Card
+import Components.Font as Font
 import Components.Layout as Layout exposing (Layout)
-import Components.Navigation as Navigation
 import Element exposing (..)
 import Element.Border as Border
 import Element.Font as Font
@@ -223,8 +223,7 @@ teamView layout teamId members actions =
 view : (Msg -> msg) -> Layout -> Model -> Element msg
 view on layout (Model { teamId } state) =
     Layout.page
-        [ Navigation.breadCrumb <| Route.Team <| UniqueID.toString teamId
-        , Components.heading "My Team"
+        [ Font.heading "My Team"
         , case state of
             LoadingTeam _ ->
                 el

@@ -1,12 +1,11 @@
 module Page.CreateTeam exposing (Model, Msg, init, update, view)
 
 import Components as C
+import Components.Font as Font
 import Components.Input as Input
 import Components.Layout as Layout
-import Components.Navigation as Navigation
 import Element exposing (..)
 import Logger
-import Route
 
 
 
@@ -109,8 +108,7 @@ view on model =
         , Layout.commonColumnSpacing
         , spacing 24
         ]
-        [ Navigation.breadCrumb Route.CreateTeam
-        , C.heading "Create new team"
+        [ Font.heading "Create new team"
         , case model of
             ViewingCreateTeamFields { teamName } ->
                 column [ spacing 24 ]

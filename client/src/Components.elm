@@ -2,17 +2,45 @@ module Components exposing (..)
 
 import Components.Colours as Colours
 import Components.Layout as Layout exposing (Layout)
+import Components.Transition as Transition
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input exposing (labelAbove, labelHidden, labelRight)
+import Element.Input as Input
+    exposing
+        ( labelAbove
+        , labelHidden
+        , labelRight
+        )
 import Element.Region as Region
 import Html exposing (Html)
 import Html.Attributes exposing (attribute)
 import Html.Events
 import Json.Decode as Decode
-import Material.Icons exposing (add, check, clear, devices, edit, filter_2, filter_3, filter_4, filter_5, filter_6, filter_7, filter_8, filter_9, filter_9_plus, home, logout, mark_chat_read, question_answer, thumb_down, thumb_up)
+import Material.Icons
+    exposing
+        ( add
+        , check
+        , clear
+        , devices
+        , edit
+        , filter_2
+        , filter_3
+        , filter_4
+        , filter_5
+        , filter_6
+        , filter_7
+        , filter_8
+        , filter_9
+        , filter_9_plus
+        , home
+        , logout
+        , mark_chat_read
+        , question_answer
+        , thumb_down
+        , thumb_up
+        )
 import Material.Icons.Types exposing (Coloring(..), Icon)
 import Route exposing (Route)
 import User exposing (User)
@@ -44,24 +72,6 @@ fadeInWithDelay delay =
 fadeIn : Element.Attribute msg
 fadeIn =
     fadeInWithDelay 0
-
-
-transition : List String -> Element.Attribute msg
-transition propertyList =
-    Element.htmlAttribute <|
-        attribute "style" <|
-            "transition-property: "
-                ++ String.join "," propertyList
-                ++ " .3s"
-
-
-transitionDuration : Float -> Element.Attribute msg
-transitionDuration duration =
-    Element.htmlAttribute <|
-        attribute "style" <|
-            "transition-duration: "
-                ++ String.fromFloat duration
-                ++ "s"
 
 
 slogan : String
@@ -373,17 +383,6 @@ dashboardSection _ contents =
         ]
 
 
-heading : String -> Element msg
-heading str =
-    paragraph
-        [ Font.extraBold
-        , Region.heading 1
-        , Font.size 26
-        , width fill
-        ]
-        [ el [ width fill ] <| text str ]
-
-
 titleFontHeading : String -> Element msg
 titleFontHeading str =
     paragraph
@@ -492,12 +491,12 @@ buttonStyles buttonType =
     , Border.rounded 8
     , paddingXY 20 15
     , centerX
-    , transition
+    , Transition.common
         [ "background-color"
         , "border-color"
         , "color"
         ]
-    , transitionDuration 0.3
+    , Transition.duration 0.3
     , Border.width 2
     , Border.color <|
         case buttonType of
@@ -772,12 +771,12 @@ controlButtonStyles controlType =
     , width fill
     , padding 10
     , Border.rounded 8
-    , transition
+    , Transition.common
         [ "background-color"
         , "color"
         , "border-color"
         ]
-    , transitionDuration 0.3
+    , Transition.duration 0.3
     , mouseOver
         [ Background.color Colours.mediumBlue
         , Font.color Colours.white

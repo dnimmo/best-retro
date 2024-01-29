@@ -41,7 +41,7 @@ styles { highlight } =
 
       else
         Background.color Colours.white
-    , width (fill |> minimum 360)
+    , width fill
     , height fill
     , Border.shadow
         { offset = ( 10, 10 )

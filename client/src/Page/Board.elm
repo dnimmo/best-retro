@@ -1,14 +1,12 @@
 module Page.Board exposing (Model, Msg, init, subscriptions, update, view)
 
 import ActionItem exposing (ActionItem)
-import Components
 import Components.Card exposing (CardVariant(..))
 import Components.Colours as Colours
 import Components.Font as Font
 import Components.Icons as Icons
 import Components.Input as Input
 import Components.Layout as Layout exposing (Layout, commonRowSpacing)
-import Components.Navigation as Navigation
 import Components.Timer as Timer
 import DiscussionItem exposing (DiscussionItem)
 import Element exposing (..)
@@ -21,7 +19,6 @@ import Page.Board.GroupingItems as GroupingItems
 import Page.Board.Intro as Intro
 import Page.Board.Loading as Loading
 import Page.Board.Voting as Voting
-import Route
 import Set exposing (Set)
 import Team exposing (Team)
 import Time
@@ -911,8 +908,7 @@ addFacilitatorControls loggedInUser state on =
 view : Layout -> (Msg -> msg) -> Model -> Element msg
 view layout on (Model user team boardId startTime state) =
     Layout.page
-        [ Navigation.breadCrumb <| Route.Board boardId
-        , addFacilitatorControls user state on
+        [ addFacilitatorControls user state on
         , case state of
             Loading ->
                 Loading.view

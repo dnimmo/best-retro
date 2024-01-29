@@ -4,12 +4,12 @@ module Team exposing
     , createTeam
     , getActionItems
     , getDescription
+    , getId
     , getMemberDetails
     , getMemberIds
     , getName
     , getTeam
     , getTeamsForUser
-    , testTeam
     , toRoute
     , userIsAdmin
     )
@@ -62,14 +62,16 @@ userIsAdmin (Team { admins }) userId =
     List.member userId admins
 
 
-getTeam : UniqueID -> Maybe Team
-getTeam id =
-    List.head <|
-        List.filter
-            (\team ->
-                getId team == id
-            )
-            teams
+getTeam : UniqueID -> (Result Http.Error Team -> msg) -> Cmd msg
+getTeam id responseMsg =
+    Http.get
+        { url = "http://localhost:8080/team/" ++ UniqueID.toString id
+        , expect = Http.expectJson responseMsg decode
+        }
+
+
+
+-- teams
 
 
 createTeam : Time.Posix -> String -> UniqueID -> Team
@@ -163,47 +165,3 @@ getActionItems teamId responseMsg =
             <|
                 Decode.list ActionItem.decode
         }
-
-
-
--- Everything below here is just for testing
-
-
-testTeam : Team
-testTeam =
-    Team
-        { name = "Team 1"
-        , members =
-            [ UniqueID.generateID <|
-                Time.millisToPosix 800000000
-            ]
-        , id = UniqueID.generateDefaultID
-        , creator =
-            UniqueID.generateID <|
-                Time.millisToPosix 800000000
-        , admins =
-            [ UniqueID.generateID <|
-                Time.millisToPosix 800000000
-            ]
-        }
-
-
-teams : List Team
-teams =
-    [ testTeam
-    , Team
-        { name = "Team 2"
-        , members =
-            [ UniqueID.generateID <|
-                Time.millisToPosix 800000000
-            ]
-        , id = UniqueID.generateDefaultID
-        , creator =
-            UniqueID.generateID <|
-                Time.millisToPosix 800000000
-        , admins =
-            [ UniqueID.generateID <|
-                Time.millisToPosix 800000000
-            ]
-        }
-    ]

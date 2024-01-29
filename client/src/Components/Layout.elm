@@ -21,6 +21,7 @@ module Components.Layout exposing
 
 import Components.Colours as Colours
 import Components.Font as Font
+import Components.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -193,6 +194,20 @@ withHeader route element =
         , height fill
         ]
         [ header route
+        , el
+            [ width fill
+            , Background.color Colours.white
+            , paddingXY 20 5
+            , Border.widthEach
+                { top = 0
+                , bottom = 1
+                , left = 0
+                , right = 0
+                }
+            , Border.color Colours.grey
+            ]
+          <|
+            Navigation.breadCrumb route
         , el
             [ height fill
             , width fill

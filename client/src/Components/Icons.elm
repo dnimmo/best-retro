@@ -331,3 +331,33 @@ breadCrumbArrow : Element msg
 breadCrumbArrow =
     html <|
         Icons.arrow_forward smallIconSize IconTypes.Inherit
+
+
+hourglass : Element msg
+hourglass =
+    html <|
+        Icons.hourglass_top iconSize IconTypes.Inherit
+
+
+succeeded : Element msg
+succeeded =
+    html <|
+        Icons.check_circle iconSize IconTypes.Inherit
+
+
+failed : Element msg
+failed =
+    html <|
+        Icons.cancel iconSize IconTypes.Inherit
+
+
+radioChecked : Element msg
+radioChecked =
+    html <|
+        Icons.radio_button_checked iconSize IconTypes.Inherit
+
+
+radioUnchecked : Element msg
+radioUnchecked =
+    html <|
+        Icons.radio_button_unchecked iconSize IconTypes.Inherit
