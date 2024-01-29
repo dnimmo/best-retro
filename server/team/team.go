@@ -24,10 +24,22 @@ func New(name string, creator uuid.UUID) Team {
 	}
 }
 
+var DevTeam Team = Team{
+
+	Id:      uuid.Must(uuid.Parse("0e596f7d-fe22-4d97-baf3-f5c508702066")),
+	Name:    "BR Dev Team 1",
+	Members: []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
+	Actions: []uuid.UUID{},
+	Creator: uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960")),
+	Admins:  []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
+}
+
 var DevTeams = []Team{
+	DevTeam,
 	{
-		Id:      uuid.Must(uuid.Parse("0e596f7d-fe22-4d97-baf3-f5c508702066")),
-		Name:    "BR Dev Team 1",
+
+		Id:      uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960")),
+		Name:    "BR Dev Team 2",
 		Members: []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
 		Actions: []uuid.UUID{},
 		Creator: uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960")),

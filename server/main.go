@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	// "database/sql"
+	// "github.com/lib/pq"
 )
 
 func setHeaders(w http.ResponseWriter) {
@@ -25,6 +27,12 @@ func main() {
 		setHeaders(w)
 
 		json.NewEncoder(w).Encode(team.DevTeams)
+	})
+
+	http.HandleFunc("/team/0e596f7d-fe22-4d97-baf3-f5c508702066", func(w http.ResponseWriter, r *http.Request) {
+		setHeaders(w)
+
+		json.NewEncoder(w).Encode(team.DevTeam)
 	})
 
 	http.HandleFunc("/team/someId", func(w http.ResponseWriter, r *http.Request) {
