@@ -382,7 +382,7 @@ view model =
                     ForgottenPassword.view ForgottenPasswordMsg model.layout forgottenPasswordModel
 
                 ViewingDashboard _ dashboardModel ->
-                    Layout.withHeader Route.Home <| Dashboard.view DashboardMsg dashboardModel
+                    Layout.withHeader Route.Home <| Dashboard.view DashboardMsg model.layout dashboardModel
 
                 ViewingMyTeams _ myTeamsModel ->
                     Layout.withHeader Route.MyTeams <| MyTeams.view MyTeamsMsg myTeamsModel

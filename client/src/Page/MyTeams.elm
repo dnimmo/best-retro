@@ -84,7 +84,6 @@ teamCard user team =
             [ width fill ]
             [ column [ width fill ]
                 [ Font.heading <| Team.getName team
-                , C.link (Team.toRoute team) [] "View team"
                 ]
             , el
                 [ alignRight
@@ -118,7 +117,6 @@ teamView user teams =
     <|
         List.map (teamCard user)
             teams
-            ++ [ el [ alignRight ] <| Card.link "Create New Team" Route.CreateTeam ]
 
 
 view : (Msg -> msg) -> Model -> Element msg

@@ -1,9 +1,16 @@
-module Components.Navigation exposing (breadCrumb)
+module Components.Navigation exposing
+    ( breadCrumb
+    , iconLink
+    , iconLinkWithText
+    , textLink
+    )
 
 import Components.Colours as Colours
 import Components.Icons as Icons
 import Components.Transition as Transition
 import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Route exposing (Route)
 
@@ -77,13 +84,8 @@ breadCrumb route =
             )
                 Route.Dashboard
                 :: (case route of
-                        Route.Team _ ->
-                            [ enabledLink Route.MyTeams
-                            ]
-
                         Route.AddTeamMembers teamId ->
-                            [ enabledLink Route.MyTeams
-                            , enabledLink <|
+                            [ enabledLink <|
                                 Route.Team teamId
                             ]
 
@@ -91,3 +93,55 @@ breadCrumb route =
                             []
                    )
                 ++ lastElement
+
+
+textLink : String -> Route -> Element msg
+textLink label route =
+    link
+        [ Font.color Colours.mediumBlue
+        , mouseOver
+            [ Font.color Colours.darkBlue
+            ]
+        , Transition.common [ "color" ]
+        , Transition.duration 0.3
+        ]
+        { url = Route.toUrlString route
+        , label = text label
+        }
+
+
+iconLinkElement : Maybe String -> Element msg -> Route -> Element msg
+iconLinkElement maybeString icon route =
+    link
+        [ width fill
+        , Font.color Colours.white
+        , Border.color Colours.mediumBlue
+        , mouseOver
+            [ Font.color Colours.mediumBlue
+            , Background.color Colours.white
+            ]
+        , Border.width 2
+        , Border.rounded 5
+        , padding 3
+        , Transition.common [ "all" ]
+        , Transition.duration 0.3
+        , Background.color Colours.mediumBlue
+        ]
+        { url = Route.toUrlString route
+        , label =
+            row
+                [ paddingXY 3 0
+                , width fill
+                ]
+                [ icon, el [ centerX ] <| text (Maybe.withDefault "" maybeString) ]
+        }
+
+
+iconLink : Element msg -> Route -> Element msg
+iconLink =
+    iconLinkElement Nothing
+
+
+iconLinkWithText : String -> Element msg -> Route -> Element msg
+iconLinkWithText label =
+    iconLinkElement (Just label)

@@ -194,27 +194,33 @@ withHeader route element =
         , height fill
         ]
         [ header route
-        , el
-            [ width fill
-            , Background.color Colours.white
-            , paddingXY 20 5
-            , Border.widthEach
-                { top = 0
-                , bottom = 1
-                , left = 0
-                , right = 0
-                }
-            , Border.color Colours.grey
-            ]
-          <|
-            Navigation.breadCrumb route
-        , el
+        , column
             [ height fill
-            , width fill
-            , Background.color Colours.skyBlue
+            , width (fill |> maximum 1000)
+            , centerX
             ]
-          <|
-            element
+            [ el
+                [ width fill
+                , Background.color Colours.white
+                , paddingXY 20 5
+                , Border.widthEach
+                    { top = 0
+                    , bottom = 1
+                    , left = 0
+                    , right = 0
+                    }
+                , Border.color Colours.grey
+                ]
+              <|
+                Navigation.breadCrumb route
+            , el
+                [ height fill
+                , width fill
+                , Background.color Colours.skyBlue
+                ]
+              <|
+                element
+            ]
         , footer
         ]
 

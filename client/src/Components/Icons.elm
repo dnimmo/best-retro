@@ -367,3 +367,15 @@ task : Element msg
 task =
     html <|
         Icons.task iconSize IconTypes.Inherit
+
+
+swap : Element msg
+swap =
+    html <|
+        Icons.swap_horiz iconSize IconTypes.Inherit
+
+
+view : Element msg
+view =
+    html <|
+        Icons.visibility iconSize IconTypes.Inherit

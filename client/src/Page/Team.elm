@@ -4,12 +4,13 @@ import ActionItem exposing (ActionItem)
 import Components
 import Components.Card as Card
 import Components.Font as Font
+import Components.Icons as Icons
 import Components.Layout as Layout exposing (Layout)
+import Components.Navigation as Navigation
 import Element exposing (..)
-import Element.Border as Border
 import Element.Font as Font
 import Http
-import Route
+import Route exposing (Route)
 import Team
 import UniqueID exposing (UniqueID)
 
@@ -146,17 +147,21 @@ update on msg ((Model details state) as model) =
 -- VIEW
 
 
+titleAndButton : String -> Route -> Element msg
+titleAndButton title route =
+    row [ width fill ]
+        [ el [ Font.bold ] <| text title
+        , el [ alignRight ] <| Navigation.iconLink Icons.createNewTeam <| route
+        ]
+
+
 teamView : Layout -> UniqueID -> List Team.MemberDetails -> List ActionItem -> Element msg
 teamView layout teamId members actions =
     column
         [ width fill
         , spacing 24
         ]
-        [ el [ Border.rounded 10 ] <|
-            Card.link "Add members" <|
-                Route.AddTeamMembers <|
-                    UniqueID.toString teamId
-        , Layout.containingElement layout
+        [ Layout.containingElement layout
             [ width fill
             , spacing 40
             ]
@@ -165,7 +170,9 @@ teamView layout teamId members actions =
                 , spacing 24
                 , alignTop
                 ]
-                [ el [ Font.bold ] <| text "Members"
+                [ titleAndButton "Members" <|
+                    Route.AddTeamMembers <|
+                        UniqueID.toString teamId
                 , if List.isEmpty members then
                     el [] <| text "There are no members in this team!"
 
@@ -193,7 +200,9 @@ teamView layout teamId members actions =
                 , spacing 24
                 , alignTop
                 ]
-                [ el [ Font.bold ] <| text "Actions"
+                [ titleAndButton "Actions" <|
+                    Route.AddTeamMembers <|
+                        UniqueID.toString teamId
                 , if List.isEmpty actions then
                     el [] <| text "There are no actions for this team"
 
