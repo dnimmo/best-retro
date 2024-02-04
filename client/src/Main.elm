@@ -382,19 +382,19 @@ view model =
                     ForgottenPassword.view ForgottenPasswordMsg model.layout forgottenPasswordModel
 
                 ViewingDashboard _ dashboardModel ->
-                    Layout.withHeader Route.Home <| Dashboard.view DashboardMsg model.layout dashboardModel
+                    Layout.withHeader model.layout Route.Home <| Dashboard.view DashboardMsg model.layout dashboardModel
 
                 ViewingMyTeams _ myTeamsModel ->
-                    Layout.withHeader Route.MyTeams <| MyTeams.view MyTeamsMsg myTeamsModel
+                    Layout.withHeader model.layout Route.MyTeams <| MyTeams.view MyTeamsMsg myTeamsModel
 
                 ViewingCreateTeam _ createTeamModel ->
-                    Layout.withHeader Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
+                    Layout.withHeader model.layout Route.CreateTeam <| CreateTeam.view CreateTeamMsg createTeamModel
 
                 ViewingAddTeamMembers _ addTeamMembersModel ->
-                    Layout.withHeader (Route.AddTeamMembers "") <| AddTeamMembers.view AddTeamMembersMsg model.layout addTeamMembersModel
+                    Layout.withHeader model.layout (Route.AddTeamMembers "") <| AddTeamMembers.view AddTeamMembersMsg model.layout addTeamMembersModel
 
                 ViewingTeam _ teamId teamModel ->
-                    Layout.withHeader
+                    Layout.withHeader model.layout
                         (Route.Team <|
                             UniqueID.toString teamId
                         )
@@ -402,10 +402,10 @@ view model =
                         TeamPage.view TeamMsg model.layout teamModel
 
                 ViewingBoard _ boardModel ->
-                    Layout.withHeader (Route.Board "") <| Board.view model.layout BoardMsg boardModel
+                    Layout.withHeader model.layout (Route.Board "") <| Board.view model.layout BoardMsg boardModel
 
                 ViewingError errorMsg ->
-                    Layout.withHeader Route.Error <| Page.Error.view errorMsg
+                    Layout.withHeader model.layout Route.Error <| Page.Error.view errorMsg
         ]
     }
 

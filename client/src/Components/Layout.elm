@@ -8,6 +8,7 @@ module Components.Layout exposing
     , dashboardSpacing
     , extraColumnSpacing
     , getLayout
+    , getWidth
     , imgSelect
     , isSingleColumn
     , label
@@ -31,7 +32,7 @@ import Route exposing (Route)
 
 type Layout
     = SingleColumn
-    | MultipleColumn
+    | MultipleColumn Int
 
 
 breakpointOne : Int
@@ -45,7 +46,18 @@ getLayout int =
         SingleColumn
 
     else
-        MultipleColumn
+        MultipleColumn int
+
+
+getWidth : Layout -> Int
+getWidth layout =
+    -- Probably want to rethink this but right now this is fine
+    case layout of
+        SingleColumn ->
+            1000
+
+        MultipleColumn width ->
+            width
 
 
 rightAlign : Layout -> Attribute msg
@@ -54,7 +66,7 @@ rightAlign layout =
         SingleColumn ->
             centerX
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             alignRight
 
 
@@ -64,7 +76,7 @@ containingElement layout =
         SingleColumn ->
             column
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             row
 
 
@@ -74,7 +86,7 @@ isSingleColumn layout =
         SingleColumn ->
             True
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             False
 
 
@@ -90,14 +102,14 @@ landingComponentContent layout { imageElement, childElement } =
         SingleColumn ->
             [ childElement ]
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             [ imageElement, childElement ]
 
 
 spacingElement : Layout -> Element msg
 spacingElement layout =
     case layout of
-        MultipleColumn ->
+        MultipleColumn _ ->
             el [ width fill ] <| Element.none
 
         SingleColumn ->
@@ -110,7 +122,7 @@ label layout { small, large } =
         SingleColumn ->
             small
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             large
 
 
@@ -120,7 +132,7 @@ dashboardSpacing layout =
         SingleColumn ->
             40
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             200
 
 
@@ -130,37 +142,35 @@ imgSelect layout filename =
         SingleColumn ->
             "/img/narrow-" ++ filename
 
-        MultipleColumn ->
+        MultipleColumn _ ->
             "/img/" ++ filename
 
 
 header : Route -> Element msg
 header route =
-    row
-        (Font.siteHeading
-            ++ [ width fill
-               , Colours.gradientBlue
-               , Font.color Colours.white
-               , Border.widthEach
-                    { top = 0
-                    , bottom = 1
-                    , left = 0
-                    , right = 0
-                    }
-               , Border.color Colours.grey
-               , spacing 10
-               ]
-        )
-    <|
-        [ image
-            [ width (fill |> maximum 360)
-            , height <| px 80
-            , moveLeft 50
-            ]
-            { src = "/img/logo.svg"
-            , description = ""
-            }
+    el
+        [ width fill
+        , Colours.gradientBlue
         ]
+    <|
+        row
+            (Font.siteHeading
+                ++ [ width (fill |> maximum 1000)
+                   , centerX
+                   , Font.color Colours.white
+                   , spacing 10
+                   ]
+            )
+        <|
+            [ image
+                [ width (fill |> maximum 360)
+                , height <| px 80
+                , moveLeft 50
+                ]
+                { src = "/img/logo.svg"
+                , description = ""
+                }
+            ]
 
 
 footer : Element msg
@@ -187,8 +197,8 @@ footer =
             text "© 2024 Nimmo"
 
 
-withHeader : Route -> Element msg -> Element msg
-withHeader route element =
+withHeader : Layout -> Route -> Element msg -> Element msg
+withHeader layout route element =
     column
         [ width fill
         , height fill
@@ -198,18 +208,22 @@ withHeader route element =
             [ height fill
             , width (fill |> maximum 1000)
             , centerX
+            , paddingXY 0 <|
+                if isSingleColumn layout then
+                    0
+
+                else
+                    36
             ]
             [ el
                 [ width fill
-                , Background.color Colours.white
+                , if isSingleColumn layout then
+                    Background.color Colours.white
+
+                  else
+                    Background.color Colours.mediumBlueTransparent
                 , paddingXY 20 5
-                , Border.widthEach
-                    { top = 0
-                    , bottom = 1
-                    , left = 0
-                    , right = 0
-                    }
-                , Border.color Colours.grey
+                , Border.rounded 5
                 ]
               <|
                 Navigation.breadCrumb route

@@ -209,11 +209,22 @@ errorView str =
     [ Element.text str ]
 
 
-controlSection : String -> List (Element msg) -> Element msg
-controlSection title content =
+controlSection : { divider : Bool } -> String -> List (Element msg) -> Element msg
+controlSection { divider } title content =
     column
         [ width fill
         , spacing 12
+        , Border.widthEach
+            { edges
+                | bottom =
+                    if divider then
+                        2
+
+                    else
+                        0
+            }
+        , paddingEach { edges | bottom = 12 }
+        , Border.color Colours.mediumBlueTransparent
         ]
     <|
         (el [] <| text title)
@@ -235,9 +246,10 @@ controls state =
                 , EFont.size 16
                 , Background.color Colours.mediumBlueTransparent
                 , Border.rounded 5
-                , width (fill |> maximum 200)
+                , width (px 200)
                 ]
-                [ controlSection "Teams"
+                [ controlSection { divider = focusedTeam /= Nothing }
+                    "Teams"
                     [ case focusedTeam of
                         Just team ->
                             Navigation.iconLinkWithText "View" Icons.view <| Route.Team <| UniqueID.toString <| Team.getId team
@@ -254,7 +266,8 @@ controls state =
                     ]
                 , case focusedTeam of
                     Just _ ->
-                        controlSection "Actions"
+                        controlSection { divider = True }
+                            "Actions"
                             [ Navigation.iconLinkWithText "New" Icons.createNewTeam Route.CreateTeam
                             ]
 
@@ -262,7 +275,8 @@ controls state =
                         none
                 , case focusedTeam of
                     Just _ ->
-                        controlSection "Boards"
+                        controlSection { divider = False }
+                            "Boards"
                             [ Navigation.iconLinkWithText "New" Icons.createNewTeam Route.CreateTeam
                             ]
 
@@ -294,7 +308,7 @@ loadedView layout user maybeTeam =
                 ]
 
         displayControls =
-            { displayControls = Layout.isSingleColumn layout }
+            { displayControls = not <| displayControlPanel layout }
     in
     [ row [ width fill ]
         [ Font.heading <|
@@ -311,6 +325,11 @@ loadedView layout user maybeTeam =
         , section <| boardsView displayControls user maybeTeam
         ]
     ]
+
+
+displayControlPanel : Layout -> Bool
+displayControlPanel layout =
+    Layout.getWidth layout > 1424
 
 
 view : (Msg -> msg) -> Layout -> Model -> Element msg
@@ -330,6 +349,13 @@ view on layout (Model user state) =
                 , width fill
                 , Layout.commonPadding
                 , spacing 36
+                , onRight <|
+                    if displayControlPanel layout then
+                        el [ paddingXY 24 0 ] <|
+                            controls state
+
+                    else
+                        none
                 ]
               <|
                 case state of
@@ -341,11 +367,6 @@ view on layout (Model user state) =
 
                     Error str ->
                         errorView str
-            , if Layout.isSingleColumn layout then
-                none
-
-              else
-                controls state
             ]
         ]
 
