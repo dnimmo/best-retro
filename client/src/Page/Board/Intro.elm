@@ -8,8 +8,8 @@ import UniqueID exposing (UniqueID)
 import User
 
 
-view : Team -> List UniqueID -> Element msg
-view team presentUserIds =
+view : List UniqueID -> Element msg
+view presentUserIds =
     let
         onlineUsers =
             []

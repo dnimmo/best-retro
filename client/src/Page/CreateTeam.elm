@@ -1,6 +1,5 @@
 module Page.CreateTeam exposing (Model, Msg, init, update, view)
 
-import Components as C
 import Components.Font as Font
 import Components.Input as Input
 import Components.Layout as Layout

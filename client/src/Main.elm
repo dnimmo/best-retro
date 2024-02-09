@@ -11,6 +11,7 @@ import Logger
 import Page.AddTeamMembers as AddTeamMembers
 import Page.Board as Board
 import Page.CreateAccount as CreateAccount
+import Page.CreateBoard as CreateBoard
 import Page.CreateTeam as CreateTeam
 import Page.Dashboard as Dashboard
 import Page.Error
@@ -21,7 +22,6 @@ import Page.MyTeams as MyTeams
 import Page.SignIn as SignIn
 import Page.Team as TeamPage
 import Route
-import Team
 import Time
 import UniqueID exposing (UniqueID)
 import Url exposing (Url)
@@ -52,6 +52,7 @@ type State
     | ViewingCreateTeam User CreateTeam.Model
     | ViewingAddTeamMembers User AddTeamMembers.Model
     | ViewingTeam User UniqueID TeamPage.Model
+    | ViewingCreateBoard User { teamId : UniqueID } CreateBoard.Model
     | ViewingBoard User Board.Model
     | ViewingError String
 
@@ -73,6 +74,7 @@ type Msg
     | CreateTeamMsg CreateTeam.Msg
     | AddTeamMembersMsg AddTeamMembers.Msg
     | TeamMsg TeamPage.Msg
+    | CreateBoardMsg CreateBoard.Msg
     | BoardMsg Board.Msg
     | UserLoaded Decode.Value
 
@@ -177,12 +179,32 @@ urlChange url model =
                             , cmd
                             )
 
+                Just Route.CreateBoard ->
+                    case User.getFocusedTeamId user of
+                        Just teamId ->
+                            ( newState <|
+                                ViewingCreateBoard user
+                                    { teamId =
+                                        teamId
+                                    }
+                                    CreateBoard.init
+                            , Cmd.none
+                            )
+
+                        Nothing ->
+                            ( Debug.log "TODO: show error here for no focused team" model, Cmd.none )
+
                 Just (Route.Board boardId) ->
-                    ( newState <|
-                        ViewingBoard user <|
-                            Board.init user (Debug.todo "initialise team") boardId model.now
-                    , Cmd.none
-                    )
+                    case User.getFocusedTeamId user of
+                        Just teamId ->
+                            ( newState <|
+                                ViewingBoard user <|
+                                    Board.init user { teamId = teamId } boardId model.now
+                            , Cmd.none
+                            )
+
+                        Nothing ->
+                            ( Debug.log "TODO: show error here for no focused team" model, Cmd.none )
 
                 _ ->
                     -- TODO: Maybe show some error in this situation
@@ -341,6 +363,17 @@ update msg model =
             , cmd
             )
 
+        ( CreateBoardMsg createBoardMsg, ViewingCreateBoard user team createBoardModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    CreateBoard.update CreateBoardMsg createBoardMsg createBoardModel
+            in
+            ( { model
+                | state = ViewingCreateBoard user team updatedModel
+              }
+            , cmd
+            )
+
         ( BoardMsg boardMsg, ViewingBoard user boardModel ) ->
             let
                 ( updatedModel, cmd ) =
@@ -400,6 +433,9 @@ view model =
                         )
                     <|
                         TeamPage.view TeamMsg model.layout teamModel
+
+                ViewingCreateBoard _ team createBoardModel ->
+                    Layout.withHeader model.layout Route.CreateBoard <| CreateBoard.view CreateBoardMsg createBoardModel
 
                 ViewingBoard _ boardModel ->
                     Layout.withHeader model.layout (Route.Board "") <| Board.view model.layout BoardMsg boardModel

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bestretro/action"
+	"bestretro/board"
 	"bestretro/team"
 	"bestretro/user"
 	"encoding/json"
@@ -45,6 +46,14 @@ func main() {
 		setHeaders(w)
 
 		json.NewEncoder(w).Encode(action.DevActions)
+	})
+
+	http.HandleFunc("/board/new", func(w http.ResponseWriter, r *http.Request) {
+		setHeaders(w)
+
+		var newBoard = board.New("Todo set board name via API")
+
+		json.NewEncoder(w).Encode(newBoard)
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

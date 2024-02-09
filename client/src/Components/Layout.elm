@@ -276,4 +276,5 @@ page =
         , height fill
         , commonPadding
         , commonColumnSpacing
+        , Background.color Colours.skyBlue
         ]

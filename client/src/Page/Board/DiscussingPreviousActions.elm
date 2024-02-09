@@ -14,8 +14,8 @@ type alias RequiredMessages msg =
     }
 
 
-view : Layout -> Team -> RequiredMessages msg -> List ActionItem -> Element msg
-view layout team { markActionAsComplete, markActionAsNotStarted, markActionAsInProgress } actions =
+view : Layout -> RequiredMessages msg -> List ActionItem -> Element msg
+view layout { markActionAsComplete, markActionAsNotStarted, markActionAsInProgress } actions =
     column
         [ width fill
         , height fill
@@ -24,8 +24,8 @@ view layout team { markActionAsComplete, markActionAsNotStarted, markActionAsInP
         [ paragraph []
             [ el [] <|
                 text <|
-                    Team.getName team
-                        ++ "'s open actions"
+                    Debug.log "Team.getName"
+                        "team's open actions"
             ]
         , wrappedRow
             [ Layout.commonColumnSpacing

@@ -92,6 +92,9 @@ fromRoute route =
         Route.CreateTeam ->
             createNewTeam
 
+        Route.CreateBoard ->
+            createNewTeam
+
         Route.Board _ ->
             board
 

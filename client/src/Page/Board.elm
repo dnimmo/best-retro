@@ -20,7 +20,6 @@ import Page.Board.Intro as Intro
 import Page.Board.Loading as Loading
 import Page.Board.Voting as Voting
 import Set exposing (Set)
-import Team exposing (Team)
 import Time
 import UniqueID exposing (UniqueID)
 import User exposing (User)
@@ -35,7 +34,7 @@ type alias BoardID =
 
 
 type Model
-    = Model User Team BoardID Time.Posix State
+    = Model User BoardID Time.Posix State
 
 
 type State
@@ -138,7 +137,7 @@ type Msg
 
 
 update : Time.Posix -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
-update now on msg ((Model user team boardId startTime state) as model) =
+update now on msg ((Model user boardId startTime state) as model) =
     let
         userId =
             User.getId user
@@ -152,7 +151,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 SimulateLoading ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                         (ReadyToStart { facilitator = user }
@@ -169,7 +167,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 ViewPreviousActions ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -188,7 +185,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 BackToStart ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -199,7 +195,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 MarkActionAsNotStarted actionItem ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -214,7 +209,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 MarkActionAsStarted actionItem ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -229,7 +223,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 MarkActionAsComplete actionItem ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -244,7 +237,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 StartAddingItems ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -269,7 +261,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 TimerMsg timerMsg ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -284,7 +275,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 UpdateField field str ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -313,7 +303,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 SubmitField field ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -367,7 +356,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 RemoveDiscussionItem item ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -383,7 +371,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 StartGroupingItems ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -398,7 +385,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 PopulateDummyItems ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -414,7 +400,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 ViewPreviousActions ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -429,7 +414,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 BackToStart ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -449,7 +433,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                     in
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -497,7 +480,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                             in
                             ( Model
                                 user
-                                team
                                 boardId
                                 startTime
                               <|
@@ -515,7 +497,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 MoveToVoting ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -542,7 +523,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 TimerMsg timerMsg ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -557,7 +537,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 ToggleVote item ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -590,7 +569,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 StartDiscussing ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -612,7 +590,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 MoveToVoting ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -629,7 +606,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                         Just details ->
                             ( Model
                                 user
-                                team
                                 boardId
                                 startTime
                               <|
@@ -650,7 +626,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 DiscussItem item ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -670,7 +645,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 CancelDiscussion ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -684,7 +658,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 UpdateActionField str ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -705,7 +678,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 UpdateAssigneeField str ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -726,7 +698,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 SubmitAction ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -766,7 +737,6 @@ update now on msg ((Model user team boardId startTime state) as model) =
                 FinishDiscussingItem item ->
                     ( Model
                         user
-                        team
                         boardId
                         startTime
                       <|
@@ -906,7 +876,7 @@ addFacilitatorControls loggedInUser state on =
 
 
 view : Layout -> (Msg -> msg) -> Model -> Element msg
-view layout on (Model user team boardId startTime state) =
+view layout on (Model user boardId startTime state) =
     Layout.page
         [ addFacilitatorControls user state on
         , case state of
@@ -914,12 +884,11 @@ view layout on (Model user team boardId startTime state) =
                 Loading.view
 
             ReadyToStart _ ->
-                Intro.view team [ User.getId user ]
+                Intro.view [ User.getId user ]
 
             DiscussingPreviousActions { actions } ->
                 PreviousActions.view
                     layout
-                    team
                     { markActionAsNotStarted = on << MarkActionAsNotStarted
                     , markActionAsInProgress = on << MarkActionAsStarted
                     , markActionAsComplete = on << MarkActionAsComplete
@@ -1005,13 +974,13 @@ view layout on (Model user team boardId startTime state) =
         ]
 
 
-init : User -> Team -> String -> Time.Posix -> Model
-init user team boardId now =
-    Model user team boardId now Loading
+init : User -> { teamId : UniqueID } -> String -> Time.Posix -> Model
+init user { teamId } boardId now =
+    Model user boardId now Loading
 
 
 subscriptions : (Msg -> msg) -> Model -> Sub msg
-subscriptions on (Model _ _ _ _ state) =
+subscriptions on (Model _ _ _ state) =
     case state of
         AddingDiscussionItems { timer } ->
             Timer.subscriptions (on << TimerMsg) timer

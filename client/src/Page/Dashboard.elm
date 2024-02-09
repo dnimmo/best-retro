@@ -28,6 +28,7 @@ type Model
 type State
     = Loading
     | Loaded { focusedTeam : Maybe Team }
+    | CreatingBoard
     | Error String
 
 
@@ -179,7 +180,7 @@ boardsView { displayControls } user maybeTeam =
                 , Font.headingTwo "Your boards"
                 ]
             , if displayControls then
-                el [ alignRight ] <| Navigation.iconLink Icons.createNewTeam <| Route.Board "dev-board"
+                el [ alignRight ] <| Navigation.iconLink Icons.createNewTeam Route.CreateBoard
 
               else
                 none
@@ -277,12 +278,15 @@ controls state =
                     Just _ ->
                         controlSection { divider = False }
                             "Boards"
-                            [ Navigation.iconLinkWithText "New" Icons.createNewTeam Route.CreateTeam
+                            [ Navigation.iconLinkWithText "New" Icons.createNewTeam Route.CreateBoard
                             ]
 
                     Nothing ->
                         none
                 ]
+
+        CreatingBoard ->
+            none
 
         Error _ ->
             none
@@ -365,6 +369,9 @@ view on layout (Model user state) =
                     Loaded { focusedTeam } ->
                         loadedView layout user focusedTeam
 
+                    CreatingBoard ->
+                        loadingView
+
                     Error str ->
                         errorView str
             ]
@@ -375,11 +382,13 @@ init : (Msg -> msg) -> User -> ( Model, Cmd msg )
 init on user =
     case User.getFocusedTeamId user of
         Just id ->
-            ( Model user <| Loaded { focusedTeam = Nothing }
+            ( Model user <|
+                Loaded { focusedTeam = Nothing }
             , Team.getTeam id <| on << TeamReceived
             )
 
         Nothing ->
-            ( Model user <| Loaded { focusedTeam = Nothing }
+            ( Model user <|
+                Loaded { focusedTeam = Nothing }
             , Cmd.none
             )

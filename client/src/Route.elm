@@ -15,6 +15,7 @@ type Route
     | Team String
     | CreateTeam
     | AddTeamMembers String
+    | CreateBoard
     | Board String
     | Error
 
@@ -29,6 +30,7 @@ slugs =
     , createTeam = "create-team"
     , viewingTeam = "team"
     , error = "something-has-gone-wrong"
+    , createBoard = "create-board"
     , viewingBoard = "board"
     , addMembers = "add-members"
     }
@@ -69,6 +71,9 @@ toUrlString route =
                 Team teamId ->
                     slugs.viewingTeam ++ "/" ++ teamId
 
+                CreateBoard ->
+                    slugs.createBoard
+
                 Board boardId ->
                     slugs.viewingBoard ++ "/" ++ boardId
 
@@ -90,6 +95,7 @@ parser =
         , Parser.map CreateTeam (s slugs.createTeam)
         , Parser.map AddTeamMembers (s slugs.viewingTeam </> Parser.string </> s slugs.addMembers)
         , Parser.map Team (s slugs.viewingTeam </> Parser.string)
+        , Parser.map CreateBoard (s slugs.createBoard)
         , Parser.map Board (s slugs.viewingBoard </> Parser.string)
         , Parser.map Error (s slugs.error)
         ]
