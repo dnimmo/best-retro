@@ -380,15 +380,12 @@ view on layout (Model user state) =
 
 init : (Msg -> msg) -> User -> ( Model, Cmd msg )
 init on user =
-    case User.getFocusedTeamId user of
+    ( Model user <|
+        Loaded { focusedTeam = Nothing }
+    , case User.getFocusedTeamId user of
         Just id ->
-            ( Model user <|
-                Loaded { focusedTeam = Nothing }
-            , Team.getTeam id <| on << TeamReceived
-            )
+            Team.getTeam id <| on << TeamReceived
 
         Nothing ->
-            ( Model user <|
-                Loaded { focusedTeam = Nothing }
-            , Cmd.none
-            )
+            Cmd.none
+    )
