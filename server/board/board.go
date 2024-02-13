@@ -1,6 +1,8 @@
 package board
 
 import (
+	"bestretro/team"
+
 	"github.com/google/uuid"
 )
 
@@ -9,9 +11,18 @@ type Board struct {
 	Name string    `json:"name"`
 }
 
-func New(name string) Board {
-	return Board{
+func New(name string, teamId uuid.UUID) Board {
+	println("Creating new board with name:", name)
+	println("Adding board to team with ID:", teamId.String())
+
+	newBoard := Board{
 		Id:   uuid.New(),
 		Name: name,
 	}
+
+	t := team.GetTeam(teamId)
+
+	t.AddBoard(newBoard.Id)
+
+	return newBoard
 }

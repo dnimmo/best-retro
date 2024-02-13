@@ -5,11 +5,10 @@ import (
 	"bestretro/board"
 	"bestretro/team"
 	"bestretro/user"
-	"encoding/json"
-	"log"
 	"net/http"
-	// "database/sql"
-	// "github.com/lib/pq"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func setHeaders(w http.ResponseWriter) {
@@ -18,43 +17,87 @@ func setHeaders(w http.ResponseWriter) {
 }
 
 func main() {
-	http.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
+	api := gin.Default()
 
-		json.NewEncoder(w).Encode(user.DevUser)
+	api.Use(corsMiddleware())
+
+	api.GET("/auth", func(c *gin.Context) {
+		c.JSON(200, user.DevUser)
 	})
 
-	http.HandleFunc("/teams", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
+	api.POST("/teams", func(c *gin.Context) {
+		// userId := c.PostForm("userId")
 
-		json.NewEncoder(w).Encode(team.DevTeams)
+		c.JSON(200, team.DevTeams)
 	})
 
-	http.HandleFunc("/team/0e596f7d-fe22-4d97-baf3-f5c508702066", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
-
-		json.NewEncoder(w).Encode(team.DevTeam)
+	api.POST("/team-members", func(c *gin.Context) {
+		c.JSON(200, team.DevTeamMemberDetails)
 	})
 
-	http.HandleFunc("/team/someId", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
+	api.POST("/team", func(c *gin.Context) {
+		var requestBody struct {
+			ID uuid.UUID `json:"id"`
+		}
+		if err := c.BindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+			return
+		}
 
-		json.NewEncoder(w).Encode(team.DevTeamMemberDetails)
+		teamID := requestBody.ID
+
+		fetchedTeam := team.GetTeam(teamID)
+		if fetchedTeam.Id == uuid.Nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Team not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, fetchedTeam)
 	})
 
-	http.HandleFunc("/actions/team/someId", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
+	api.POST("/board/new", func(c *gin.Context) {
+		type RequestBody struct {
+			Name   string    `json:"name"`
+			TeamId uuid.UUID `json:"teamId"`
+		}
 
-		json.NewEncoder(w).Encode(action.DevActions)
+		var requestBody RequestBody
+		if err := c.BindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Log the parsed values
+		println("Received board name:", requestBody.Name)
+		println("Received team ID:", requestBody.TeamId.String())
+
+		boardName := requestBody.Name
+		teamId := requestBody.TeamId
+		newBoard := board.New(boardName, teamId)
+
+		c.JSON(200, newBoard)
 	})
 
-	http.HandleFunc("/board/new", func(w http.ResponseWriter, r *http.Request) {
-		setHeaders(w)
+	api.POST("/actions", func(c *gin.Context) {
+		// teamId := c.PostForm("teamId")
 
-		var newBoard = board.New("Todo set board name via API")
-
-		json.NewEncoder(w).Encode(newBoard)
+		c.JSON(200, action.DevActions)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	api.Run(":8080")
+}
+
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }

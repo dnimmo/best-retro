@@ -1,6 +1,8 @@
 package team
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -11,6 +13,7 @@ type Team struct {
 	Actions []uuid.UUID `json:"actions"`
 	Creator uuid.UUID   `json:"creator"`
 	Admins  []uuid.UUID `json:"admins"`
+	Boards  []uuid.UUID `json:"boards"`
 }
 
 func New(name string, creator uuid.UUID) Team {
@@ -21,17 +24,18 @@ func New(name string, creator uuid.UUID) Team {
 		Actions: []uuid.UUID{},
 		Creator: creator,
 		Admins:  []uuid.UUID{creator},
+		Boards:  []uuid.UUID{},
 	}
 }
 
 var DevTeam Team = Team{
-
 	Id:      uuid.Must(uuid.Parse("0e596f7d-fe22-4d97-baf3-f5c508702066")),
 	Name:    "BR Dev Team 1",
 	Members: []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
 	Actions: []uuid.UUID{},
 	Creator: uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960")),
 	Admins:  []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
+	Boards:  []uuid.UUID{},
 }
 
 var DevTeams = []Team{
@@ -44,7 +48,24 @@ var DevTeams = []Team{
 		Actions: []uuid.UUID{},
 		Creator: uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960")),
 		Admins:  []uuid.UUID{uuid.Must(uuid.Parse("9a4269ee-45f2-43ed-8e81-5cc1f6b89960"))},
+		Boards:  []uuid.UUID{},
 	},
+}
+
+func GetTeam(id uuid.UUID) Team {
+	println("Getting team with ID:", id.String())
+	for _, team := range DevTeams {
+		if team.Id == id {
+			return team
+		}
+	}
+	return Team{}
+}
+
+func (t *Team) AddBoard(boardId uuid.UUID) {
+	fmt.Println("Boards before:", t.Boards)
+	t.Boards = append(t.Boards, boardId)
+	fmt.Println("Boards after:", t.Boards)
 }
 
 type TeamMemberDetails struct {
